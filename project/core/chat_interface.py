@@ -184,80 +184,193 @@ class ChatInterface:
         response_messages[-1]["content"] += chunk.content
 
     def get_search_results_markdown(self) -> str:
-        """Render the latest search results and query rewrites in clean GitHub-flavored markdown."""
+        """Render the latest search results and query rewrites in clean rich cards."""
         if not self.last_query:
-            return (
-                "### 🔍 No Search Queries Yet\n"
-                "_Ask a question in the chat to see real-time hybrid search results and retrieved context here._"
-            )
+            return """
+            <div style="padding: 24px; text-align: center; color: #64748b; font-size: 0.85rem;">
+                <div style="font-size: 1.5rem; margin-bottom: 6px;">🔍</div>
+                <strong style="color: #94a3b8;">No Search Queries Yet</strong><br>
+                Ask a question in the chat to see real-time hybrid retrieval (Qdrant + BM25) and extracted excerpts here.
+            </div>
+            """
 
-        md = [f"### 🔍 Search & Retrieval Results\n**Active Question:** `{self.last_query}`\n"]
+        html_blocks = [
+            f"""
+            <div style="margin-bottom: 12px; padding: 10px 14px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px;">
+                <div style="font-size: 0.72rem; font-weight: 700; color: #a5b4fc; text-transform: uppercase;">Active Search Query</div>
+                <div style="font-size: 0.90rem; font-weight: 600; color: #ffffff; margin-top: 2px;">{self.last_query}</div>
+            </div>
+            """
+        ]
 
         if self.rewritten_questions:
-            md.append("#### 🔄 Rewritten Sub-Queries")
-            for q in self.rewritten_questions:
-                md.append(f"- 🔎 `{q}`")
-            md.append("")
+            questions_html = "".join([f'<li style="margin-bottom: 3px; color: #cbd5e1;"><code>{q}</code></li>' for q in self.rewritten_questions])
+            html_blocks.append(f"""
+            <div style="margin-bottom: 12px;">
+                <div style="font-size: 0.74rem; font-weight: 700; color: #c084fc; text-transform: uppercase; margin-bottom: 4px;">🔄 Rewritten Sub-Queries</div>
+                <ul style="margin: 0; padding-left: 20px; font-size: 0.82rem;">{questions_html}</ul>
+            </div>
+            """)
 
         if not self.search_results:
-            md.append("\n> [!NOTE]\n> No child chunks were retrieved yet for this turn. The agent may be analyzing history or responding directly.")
+            html_blocks.append("""
+            <div style="padding: 12px; background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 8px; color: #94a3b8; font-size: 0.80rem;">
+                ℹ️ No child chunks were retrieved for this turn. The agent answered directly from context or conversation history.
+            </div>
+            """)
         else:
-            md.append(f"\n#### 📑 Retrieved Chunks ({len(self.search_results)} excerpts found)\n")
+            cards = []
             for i, r in enumerate(self.search_results, 1):
-                parent_badge = f"`{r['parent_id']}`" if r['parent_id'] != 'N/A' else "_N/A_"
-                md.append(
-                    f"**{i}. 📄 {r['file_name']}** | Parent ID: {parent_badge}\n"
-                    f"```text\n{r['content']}\n```\n"
-                )
+                parent_badge = f'<span class="badge-tag badge-chunks">Parent: {r["parent_id"]}</span>' if r['parent_id'] != 'N/A' else ''
+                cards.append(f"""
+                <div class="search-chunk-card">
+                    <div class="search-chunk-header">
+                        <span style="font-weight: 700; color: #f1f5f9; display: flex; align-items: center; gap: 6px;">
+                            <span style="color: #38bdf8;">#{i}</span> 📄 {r['file_name']}
+                        </span>
+                        {parent_badge}
+                    </div>
+                    <div class="search-chunk-content">{r['content']}</div>
+                </div>
+                """)
+            html_blocks.append("".join(cards))
 
-        return "\n".join(md)
+        return "\n".join(html_blocks)
 
     def get_observability_markdown(self) -> str:
-        """Render live agent call traces, active steps, and system diagnostics."""
+        """Render live agent call traces, active steps, and system diagnostics with rich styling."""
         active = self.session_metrics.get("active_node", "Idle")
         status = self.session_metrics.get("status", "Ready")
         tool_count = self.session_metrics.get("tool_calls", 0)
-        
-        md = [
-            "### 🛰️ Live Agent Execution Trace\n",
-            f"**Workflow State:** `{status}` | **Active Node:** `{active}` | **Tools Invoked:** `{tool_count}`\n",
-            "#### 🔄 Agent State Machine Pipeline",
-            "1. `[+] main.summarize_history` — Context compaction",
-            "2. `[+] main.rewrite_query` — Intent analysis & query expansion",
-            "3. `[+] agent.orchestrator` — Reasoning & decision node",
-            "4. `[+] agent.tools` — Hybrid Qdrant & BM25 search",
-            "5. `[+] agent.compress_context` — Token optimization",
-            "6. `[+] main.aggregate_answers` — Final answer synthesis\n",
-            "#### 📋 Recent Execution Log (Latest First)",
+
+        pipeline_nodes = [
+            ("1", "main.summarize_history", "Context compaction & rolling summary"),
+            ("2", "main.rewrite_query", "Intent analysis & multi-query expansion"),
+            ("3", "agent.orchestrator", "Agent reasoning & tool decision node"),
+            ("4", "agent.tools", "Hybrid Qdrant & BM25 retrieval"),
+            ("5", "agent.compress_context", "Token budget compression & optimization"),
+            ("6", "main.aggregate_answers", "Final answer aggregation & synthesis"),
         ]
 
-        if not self.events_log:
-            md.append("_No execution events recorded yet. Send a query to observe live agent calls._")
-        else:
-            md.append("| Time | Node | Event | Detail |")
-            md.append("| :--- | :--- | :--- | :--- |")
-            for ev in reversed(self.events_log[-12:]):
-                detail_clean = ev['detail'].replace("|", "\\|")
-                md.append(f"| `{ev['time']}` | `{ev['node']}` | **{ev['type']}** | {detail_clean} |")
+        stepper_items = []
+        for num, node_name, desc in pipeline_nodes:
+            is_active = (node_name == active) or (node_name in active)
+            active_class = "active" if is_active else ""
+            dot_color = "#34d399" if is_active else ("#6366f1" if status == "Completed" else "#475569")
+            stepper_items.append(f"""
+            <div class="stepper-item {active_class}">
+                <div class="stepper-num" style="background: rgba(99, 102, 241, {'0.35' if is_active else '0.15'});">{num}</div>
+                <div style="flex: 1;">
+                    <div class="stepper-title" style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>{node_name}</span>
+                        <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: {dot_color};"></span>
+                    </div>
+                    <div class="stepper-desc">{desc}</div>
+                </div>
+            </div>
+            """)
 
-        return "\n".join(md)
+        event_rows = []
+        if not self.events_log:
+            event_rows.append("""
+            <tr>
+                <td colspan="4" style="text-align: center; color: #64748b; padding: 14px;">
+                    No execution events recorded yet. Send a query to observe live agent calls.
+                </td>
+            </tr>
+            """)
+        else:
+            for ev in reversed(self.events_log[-10:]):
+                event_rows.append(f"""
+                <tr>
+                    <td style="font-family: 'JetBrains Mono', monospace; color: #38bdf8;">{ev['time']}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #cbd5e1;">{ev['node']}</td>
+                    <td><strong style="color: #e2e8f0;">{ev['type']}</strong></td>
+                    <td style="color: #94a3b8;">{ev['detail']}</td>
+                </tr>
+                """)
+
+        return f"""
+        <div style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 90px; background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px; text-align: center;">
+                <div style="font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Status</div>
+                <div style="font-size: 0.92rem; font-weight: 700; color: {'#34d399' if status in ('Ready', 'Completed') else '#60a5fa'};">{status}</div>
+            </div>
+            <div style="flex: 1; min-width: 90px; background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px; text-align: center;">
+                <div style="font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Active Node</div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #c084fc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{active}</div>
+            </div>
+            <div style="flex: 1; min-width: 90px; background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px; text-align: center;">
+                <div style="font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Tools Invoked</div>
+                <div style="font-size: 0.92rem; font-weight: 700; color: #f59e0b;">{tool_count}</div>
+            </div>
+        </div>
+
+        <div style="font-size: 0.74rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 6px 0;">
+            🔄 State Machine Pipeline
+        </div>
+        <div class="stepper-list">
+            {''.join(stepper_items)}
+        </div>
+
+        <div style="font-size: 0.74rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 0 6px 0;">
+            📋 Execution Event Log (Latest First)
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Node</th>
+                    <th>Event</th>
+                    <th>Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                {''.join(event_rows)}
+            </tbody>
+        </table>
+        """
 
     def get_memory_markdown(self) -> str:
-        """Render thread ID, working memory summary, and conversation state."""
+        """Render thread ID, working memory summary, and conversation state in rich cards."""
         tid = self.rag_system.thread_id
-        summary = self.working_memory_summary.strip() or "_No conversation summary generated yet. The agent will summarize previous turns automatically as context grows._"
-        clarification = "⚠️ Clarification needed from user" if self.session_metrics.get("clarification_needed") else "✅ Query is clear"
+        summary = self.working_memory_summary.strip() or "No conversation summary generated yet. The agent automatically compresses previous turns into working memory as dialogue length increases."
+        clarification = "⚠️ Clarification needed from user" if self.session_metrics.get("clarification_needed") else "✅ Query is unambiguous & clear"
         
         import config
-        return (
-            "### 🧠 Agent Memory & Session State\n\n"
-            f"- **Thread ID:** `{tid}`\n"
-            f"- **Dialogue Status:** {clarification}\n"
-            f"- **LLM Provider:** `{getattr(config, 'LLM_PROVIDER', 'ollama')}` ({getattr(config, 'LLM_MODEL', 'qwen3.5:9b')})\n"
-            f"- **Langfuse Observability:** `{'🟢 Active' if getattr(config, 'LANGFUSE_ENABLED', False) else '⚪ Disabled'}`\n\n"
-            "#### 📝 Working Memory Summary\n"
-            f"> {summary}\n"
-        )
+        return f"""
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
+                <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Session Thread ID</div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.80rem; color: #38bdf8; word-break: break-all; margin-top: 3px;">
+                    {tid}
+                </div>
+            </div>
+
+            <div style="background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
+                <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Dialogue State</div>
+                <div style="font-size: 0.84rem; font-weight: 600; color: {'#fbbf24' if self.session_metrics.get('clarification_needed') else '#34d399'}; margin-top: 3px;">
+                    {clarification}
+                </div>
+            </div>
+
+            <div style="background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
+                <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Active LLM Runtime</div>
+                <div style="font-size: 0.82rem; color: #e2e8f0; margin-top: 3px;">
+                    Provider: <strong style="color: #c084fc;">{getattr(config, 'LLM_PROVIDER', 'ollama')}</strong> | 
+                    Model: <strong style="color: #38bdf8;">{getattr(config, 'LLM_MODEL', 'qwen3.5:9b')}</strong>
+                </div>
+            </div>
+
+            <div style="background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
+                <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">🧠 Working Memory Summary</div>
+                <div style="font-size: 0.80rem; color: #cbd5e1; line-height: 1.5; background: rgba(0, 0, 0, 0.3); border-left: 3px solid #6366f1; padding: 10px 12px; border-radius: 4px;">
+                    {summary}
+                </div>
+            </div>
+        </div>
+        """
+
 
     def chat_stream_full(self, message, history):
         """Generator yielding (messages, search_results_md, observability_md, memory_md)."""
