@@ -21,6 +21,6 @@ from ui.gradio_app import create_gradio_ui, SPLITTER_JS
 
 if __name__ == "__main__":
     print("\n🔨 Creating RAG Assistant...")
-    demo = create_gradio_ui()
+    demo, theme = create_gradio_ui()
     print("\n🚀 Launching RAG Assistant...")
-    demo.launch(css=custom_css, js=SPLITTER_JS)
+    demo.launch(css=custom_css, js=SPLITTER_JS, theme=theme)

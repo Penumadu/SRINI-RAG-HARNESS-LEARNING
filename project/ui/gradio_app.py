@@ -248,7 +248,7 @@ def create_gradio_ui():
         input_background_fill_dark="#ffffff",
     )
 
-    with gr.Blocks(title="Srini RAG Harness Learning", fill_width=True, fill_height=True, theme=theme) as demo:
+    with gr.Blocks(title="Srini RAG Harness Learning", fill_width=True, fill_height=True) as demo:
 
         # =====================================================================
         # TOP APP HEADER BAR (Fixed 48px height, Clean Single Row)
@@ -606,5 +606,5 @@ def create_gradio_ui():
         right_slider.input(fn=None, inputs=[right_slider], js=right_resize_js)
         right_slider.change(fn=None, inputs=[right_slider], js=right_resize_js)
 
-    return demo
+    return demo, theme
 

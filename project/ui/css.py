@@ -866,4 +866,166 @@ button:hover { opacity: 0.9 !important; }
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--background-color); }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ==========================================================================
+   SMOOTH TRANSITIONS & MICRO-ANIMATIONS
+   ========================================================================== */
+
+/* Smooth group container interactions */
+#col-sidebar .group,
+#col-sidebar .form,
+#col-inspector .group,
+#col-inspector .form {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+#col-sidebar .group:hover,
+#col-sidebar .form:hover {
+    box-shadow: 0 2px 8px rgba(76, 66, 109, 0.06) !important;
+    border-color: rgba(76, 66, 109, 0.15) !important;
+}
+
+/* Smooth button press feedback */
+button {
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+button:active {
+    transform: scale(0.97) !important;
+}
+
+/* Smooth tab switching animation */
+#observability-tabs .tabitem {
+    animation: fadeSlideIn 0.25s ease-out !important;
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Smooth accordion open */
+#search-accordion .wrap {
+    transition: max-height 0.3s ease, opacity 0.25s ease !important;
+}
+
+/* Smooth stat card hover */
+.stat-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.stat-card:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(76, 66, 109, 0.10) !important;
+}
+
+/* Smooth obs stat card hover */
+.obs-stat-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.obs-stat-card:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(76, 66, 109, 0.10) !important;
+}
+
+/* Smooth stepper item entrance */
+.stepper-item {
+    transition: all 0.2s ease !important;
+}
+
+.stepper-item:hover {
+    transform: translateX(2px) !important;
+    box-shadow: 0 2px 6px rgba(76, 66, 109, 0.08) !important;
+}
+
+/* Smooth search chunk card */
+.search-chunk-card {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.search-chunk-card:hover {
+    border-color: rgba(76, 66, 109, 0.20) !important;
+    box-shadow: 0 2px 8px rgba(76, 66, 109, 0.08) !important;
+}
+
+/* Smooth chat item hover */
+.chat-item {
+    transition: background-color 0.15s ease, transform 0.12s ease !important;
+}
+
+.chat-item:hover {
+    transform: translateX(2px) !important;
+}
+
+/* Upload area smooth focus */
+[data-testid="file-upload"] {
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+[data-testid="file-upload"]:hover {
+    box-shadow: 0 2px 10px rgba(76, 66, 109, 0.08) !important;
+}
+
+/* Smooth column resize transitions (only when not dragging) */
+#col-sidebar,
+#col-inspector {
+    transition: flex 0.08s ease-out, width 0.08s ease-out, min-width 0.08s ease-out, max-width 0.08s ease-out !important;
+}
+
+/* Chat message entrance animation */
+.message {
+    animation: msgFadeIn 0.3s ease-out !important;
+}
+
+@keyframes msgFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Smooth input focus glow */
+textarea, input[type="text"] {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Badge hover polish */
+.badge-tag {
+    transition: transform 0.12s ease !important;
+}
+
+.badge-tag:hover {
+    transform: scale(1.04) !important;
+}
+
+/* Compact agent header smooth hover */
+.compact-agent-header {
+    transition: box-shadow 0.2s ease !important;
+}
+
+.compact-agent-header:hover {
+    box-shadow: 0 2px 8px rgba(76, 66, 109, 0.08) !important;
+}
+
+/* Status pill hover */
+.status-pill {
+    transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+}
+
+.status-pill:hover {
+    transform: scale(1.03) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+}
 """
