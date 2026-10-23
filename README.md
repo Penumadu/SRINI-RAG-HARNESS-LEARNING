@@ -2,7 +2,7 @@
   <img alt="Agentic RAG for Dummies Logo" src="assets/logo.png" width="350px">
 </p>
 
-<h1 align="center">Agentic RAG for Dummies</h1>
+<h1 align="center">Srini RAG Harness Learning</h1>
 
 <p align="center">
   <strong>Build a modular Agentic RAG system with LangGraph, conversation memory, and human-in-the-loop query clarification</strong>

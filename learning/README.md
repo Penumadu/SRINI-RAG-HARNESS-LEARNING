@@ -1,4 +1,4 @@
-# 🎓 Agentic RAG for Dummies — Learning Path (Local Python Files)
+# 🎓 Srini RAG Harness Learning — Local Learning Modules
 
 This folder contains the complete conversion of the interactive Jupyter notebooks into **clean, well-commented, standalone, and executable Python files**. You can read them to learn every concept in detail and run them directly from your local terminal or IDE.
 
@@ -67,7 +67,7 @@ python run.py
 You will see the guided menu:
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                    🎓 AGENTIC RAG FOR DUMMIES RUNNER                         ║
+║                    🎓 SRINI RAG HARNESS LEARNING RUNNER                      ║
 ║         Hierarchical Indexing • LangGraph Agents • Human-in-the-Loop         ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 

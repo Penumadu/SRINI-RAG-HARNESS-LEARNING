@@ -22,7 +22,7 @@ from learning import config
 def print_banner():
     banner = """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                    🎓 AGENTIC RAG FOR DUMMIES RUNNER                         ║
+║                    🎓 SRINI RAG HARNESS LEARNING RUNNER                      ║
 ║         Hierarchical Indexing • LangGraph Agents • Human-in-the-Loop         ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
