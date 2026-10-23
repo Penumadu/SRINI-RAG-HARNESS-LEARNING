@@ -58,7 +58,7 @@ HEADERS_TO_SPLIT_ON = [
 ]
 
 # --- Langfuse Observability ---
-LANGFUSE_ENABLED = os.environ.get("LANGFUSE_ENABLED", "false").lower() == "true"
+LANGFUSE_ENABLED = os.environ.get("LANGFUSE_ENABLED", "true").lower() == "true"
 LANGFUSE_PUBLIC_KEY = os.environ.get("LANGFUSE_PUBLIC_KEY", "pk-lf-8f745afb-1b17-4fd3-9cd6-f7d1c745df42")
 LANGFUSE_SECRET_KEY = os.environ.get("LANGFUSE_SECRET_KEY", "sk-lf-094ccfe2-979b-4cb2-b827-90c0fa413d6d")
-LANGFUSE_BASE_URL = os.environ.get("LANGFUSE_BASE_URL", "http://localhost:3000")
+LANGFUSE_BASE_URL = os.environ.get("LANGFUSE_BASE_URL", "https://us.cloud.langfuse.com")
