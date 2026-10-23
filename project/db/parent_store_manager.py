@@ -62,7 +62,24 @@ class ParentStoreManager:
             except (OSError, json.JSONDecodeError):
                 continue
         return sorted(sources)
-    
+
+    def get_count(self) -> int:
+        try:
+            return len(list(self.__store_path.glob("*.json")))
+        except Exception:
+            return 0
+
+    def get_sources_with_counts(self) -> Dict[str, int]:
+        counts = {}
+        for file_path in self.__store_path.glob("*.json"):
+            try:
+                source = json.loads(file_path.read_text(encoding="utf-8")).get("metadata", {}).get("source", "Unknown")
+                counts[source] = counts.get(source, 0) + 1
+            except (OSError, json.JSONDecodeError):
+                continue
+        return counts
+
     def clear_store(self) -> None:
         self.__store_path.mkdir(parents=True, exist_ok=True)
         clear_directory_contents(self.__store_path)
+

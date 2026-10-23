@@ -79,3 +79,28 @@ class DocumentManager:
         self.rag_system.parent_store.clear_store()
 
         self.rag_system.vector_db.create_collection(self.rag_system.collection_name)
+
+    def get_chunk_analytics(self):
+        doc_files = self.get_markdown_files()
+        total_docs = len(doc_files)
+        parent_count = self.rag_system.parent_store.get_count()
+        child_count = self.rag_system.vector_db.get_points_count(self.rag_system.collection_name)
+        avg_child = round(child_count / total_docs, 1) if total_docs > 0 else 0
+        avg_parent = round(parent_count / total_docs, 1) if total_docs > 0 else 0
+        source_counts = self.rag_system.parent_store.get_sources_with_counts()
+
+        return {
+            "total_docs": total_docs,
+            "doc_list": doc_files,
+            "parent_chunks": parent_count,
+            "child_chunks": child_count,
+            "avg_child_per_doc": avg_child,
+            "avg_parent_per_doc": avg_parent,
+            "source_counts": source_counts,
+            "strategy": "Hierarchical Parent-Child Chunking",
+            "parent_type": f"Markdown Header Splitter ({', '.join(h[0] for h in config.HEADERS_TO_SPLIT_ON)} | Min: {config.MIN_PARENT_SIZE}, Max: {config.MAX_PARENT_SIZE} chars)",
+            "child_type": f"Recursive Character Splitter ({config.CHILD_CHUNK_SIZE} chars | {config.CHILD_CHUNK_OVERLAP} overlap)",
+            "dense_model": config.DENSE_MODEL,
+            "sparse_model": config.SPARSE_MODEL,
+        }
+

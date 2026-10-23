@@ -1,5 +1,5 @@
 """
-Top-level entry point for running the Agentic RAG Learning and Runner dashboard.
+Top-level entry point for running the Srini RAG Harness Learning and Runner dashboard.
 """
 
 import sys

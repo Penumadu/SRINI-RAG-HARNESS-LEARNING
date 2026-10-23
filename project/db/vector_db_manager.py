@@ -77,3 +77,14 @@ class VectorDbManager:
                 )
         except Exception as e:
             raise RuntimeError(f"Unable to initialize Qdrant collection '{collection_name}'.") from e
+
+    def get_points_count(self, collection_name=None) -> int:
+        col = collection_name or config.CHILD_COLLECTION
+        try:
+            if self.__client.collection_exists(col):
+                info = self.__client.get_collection(col)
+                return getattr(info, "points_count", 0) or 0
+        except Exception:
+            pass
+        return 0
+
