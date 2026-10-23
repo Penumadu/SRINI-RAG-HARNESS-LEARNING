@@ -17,8 +17,8 @@ def format_doc_list_html(analytics: dict) -> str:
     source_counts = analytics.get("source_counts", {})
     if not docs:
         return """
-        <div style="padding: 18px; text-align: center; color: #64748b; font-size: 0.82rem; background: rgba(7, 10, 19, 0.5); border-radius: 8px;">
-            📭 No documents ingested yet.<br>Drop PDF or Markdown files above to begin.
+        <div style="padding: 14px; text-align: center; color: #64748b; font-size: 0.80rem; background: rgba(0,0,0,0.2); border-radius: 6px;">
+            📭 No documents ingested yet.<br>Upload PDF or Markdown above.
         </div>
         """
     
@@ -56,44 +56,44 @@ def format_chunk_analytics_html(analytics: dict) -> str:
     <div class="stats-grid">
         <div class="stat-card stat-card-blue">
             <div class="stat-value">{total_docs}</div>
-            <div class="stat-label">Total Documents</div>
+            <div class="stat-label">Total Docs</div>
         </div>
         <div class="stat-card stat-card-purple">
             <div class="stat-value">{parent_chunks}</div>
-            <div class="stat-label">Parent Chunks</div>
+            <div class="stat-label">Parents</div>
         </div>
         <div class="stat-card stat-card-emerald">
             <div class="stat-value">{child_chunks}</div>
-            <div class="stat-label">Child Chunks (Indexed)</div>
+            <div class="stat-label">Children</div>
         </div>
         <div class="stat-card stat-card-amber">
             <div class="stat-value">{avg_child}</div>
-            <div class="stat-label">Avg Chunks / Doc</div>
+            <div class="stat-label">Avg / Doc</div>
         </div>
     </div>
 
     <div class="strategy-box">
         <div class="strategy-row">
-            <span class="strategy-label">⚡ Chunking Strategy</span>
+            <span class="strategy-label">⚡ Strategy</span>
             <div class="strategy-content">
-                <span class="badge-tag badge-chunks" style="font-size: 0.74rem;">{analytics.get('strategy', 'Hierarchical Parent-Child')}</span>
+                <span class="badge-tag badge-chunks">{analytics.get('strategy', 'Hierarchical Parent-Child')}</span>
             </div>
         </div>
-        <div class="strategy-row" style="margin-top: 6px;">
-            <span class="strategy-label">🧱 Parent Chunker (Contextual)</span>
-            <div class="strategy-content" style="color: #cbd5e1;">
+        <div class="strategy-row" style="margin-top: 4px;">
+            <span class="strategy-label">🧱 Parent Chunker</span>
+            <div class="strategy-content">
                 {analytics.get('parent_type', 'Markdown Header Splitter')}
             </div>
         </div>
-        <div class="strategy-row" style="margin-top: 6px;">
-            <span class="strategy-label">🎯 Child Chunker (Vector Retrieval)</span>
-            <div class="strategy-content" style="color: #cbd5e1;">
+        <div class="strategy-row" style="margin-top: 4px;">
+            <span class="strategy-label">🎯 Child Chunker</span>
+            <div class="strategy-content">
                 {analytics.get('child_type', 'Recursive Character Splitter')}
             </div>
         </div>
-        <div class="strategy-row" style="margin-top: 6px;">
-            <span class="strategy-label">🧬 Embeddings (Hybrid Search)</span>
-            <div class="strategy-content" style="font-family: 'JetBrains Mono', monospace; font-size: 0.73rem;">
+        <div class="strategy-row" style="margin-top: 4px;">
+            <span class="strategy-label">🧬 Embeddings</span>
+            <div class="strategy-content" style="font-family: 'JetBrains Mono', monospace; font-size: 0.70rem;">
                 Dense: <span style="color: #38bdf8;">{analytics.get('dense_model', '')}</span><br>
                 Sparse: <span style="color: #c084fc;">{analytics.get('sparse_model', '')}</span>
             </div>
@@ -111,98 +111,88 @@ def create_gradio_ui():
     
     initial_analytics = doc_manager.get_chunk_analytics()
 
-    # Premium dark theme configuration
     theme = gr.themes.Soft(
         primary_hue="indigo",
         secondary_hue="slate",
         neutral_hue="slate",
     ).set(
-        body_background_fill="#070a13",
-        body_background_fill_dark="#070a13",
-        block_background_fill="#0e1424",
-        block_background_fill_dark="#0e1424",
-        block_border_width="1px",
-        block_border_color="rgba(255, 255, 255, 0.08)",
-        block_border_color_dark="rgba(255, 255, 255, 0.08)",
-        border_color_primary="rgba(99, 102, 241, 0.4)",
+        body_background_fill="#080c16",
+        body_background_fill_dark="#080c16",
+        block_background_fill="#0b101d",
+        block_background_fill_dark="#0b101d",
+        block_border_width="0px",
         button_primary_background_fill="linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
         button_primary_text_color="#ffffff",
-        button_secondary_background_fill="rgba(255, 255, 255, 0.06)",
+        button_secondary_background_fill="rgba(255, 255, 255, 0.05)",
         button_secondary_text_color="#e2e8f0",
-        input_background_fill="#0e1424",
-        input_background_fill_dark="#0e1424",
-        input_border_color="rgba(255, 255, 255, 0.12)",
+        input_background_fill="#10172a",
+        input_background_fill_dark="#10172a",
     )
 
     with gr.Blocks(title="Srini RAG Harness Learning", fill_width=True, fill_height=True, theme=theme) as demo:
-        
-        # Inject custom CSS directly for 100% reliable rendering
-        gr.HTML(f"<style>{custom_css}</style>")
 
-        # --- Top Header ---
-        with gr.Row(elem_id="top-header"):
-            with gr.Column(scale=8):
-                provider = getattr(config, 'LLM_PROVIDER', 'ollama')
-                model_name = getattr(config, 'LLM_MODEL', 'qwen3.5:9b')
-                gr.HTML(
-                    f"""
-                    <div>
-                        <div class="brand-badge">⚡ PRODUCTION ARCHITECTURE</div>
-                        <h1 class="main-title">Srini RAG Harness Learning</h1>
-                        <p class="sub-title">Hierarchical Parent-Child Chunking • Hybrid Retrieval (Qdrant + BM25) • LangGraph Multi-Agent • Telemetry</p>
-                    </div>
-                    """
-                )
-            with gr.Column(scale=4):
-                langfuse_on = getattr(config, 'LANGFUSE_ENABLED', False)
-                gr.HTML(
-                    f"""
-                    <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; height: 100%;">
-                        <span class="status-pill pill-green">
-                            <span class="status-dot" style="background: #34d399;"></span> Qdrant Hybrid
-                        </span>
-                        <span class="status-pill pill-purple">
-                            <span class="status-dot" style="background: #c084fc;"></span> {provider}:{model_name}
-                        </span>
-                        <span class="status-pill {'pill-blue' if langfuse_on else ''}">
-                            <span class="status-dot" style="background: {'#60a5fa' if langfuse_on else '#64748b'};"></span>
-                            {'Langfuse Active' if langfuse_on else 'Langfuse Off'}
-                        </span>
-                    </div>
-                    """
-                )
+        # =====================================================================
+        # TOP APP HEADER BAR (Fixed 56px height)
+        # =====================================================================
+        with gr.Row(elem_id="app-header"):
+            provider = getattr(config, 'LLM_PROVIDER', 'ollama')
+            model_name = getattr(config, 'LLM_MODEL', 'qwen3.5:9b')
+            langfuse_on = getattr(config, 'LANGFUSE_ENABLED', False)
 
-        # --- Main 3-Column Layout ---
-        with gr.Row(elem_id="main-3-col-layout", equal_height=False):
+            gr.HTML(
+                f"""
+                <div class="app-brand">
+                    <span class="app-brand-badge">PROD</span>
+                    <h1 class="app-brand-title">⚡ Srini RAG Harness Learning</h1>
+                </div>
+                <div class="app-status-bar">
+                    <span class="status-pill pill-green">
+                        <span class="status-dot" style="background: #34d399;"></span> Qdrant Hybrid
+                    </span>
+                    <span class="status-pill pill-purple">
+                        <span class="status-dot" style="background: #c084fc;"></span> {provider}:{model_name}
+                    </span>
+                    <span class="status-pill {'pill-blue' if langfuse_on else ''}">
+                        <span class="status-dot" style="background: {'#60a5fa' if langfuse_on else '#64748b'};"></span>
+                        {'Langfuse Active' if langfuse_on else 'Langfuse Off'}
+                    </span>
+                </div>
+                """
+            )
+
+        # =====================================================================
+        # MAIN 3-COLUMN SEAMLESS CONTAINER (height: calc(100vh - 56px))
+        # =====================================================================
+        with gr.Row(elem_id="app-3-columns", equal_height=True):
             
-            # =================================================================
-            # LEFT COLUMN: Upload, Documents, Chunk Analytics
-            # =================================================================
-            with gr.Column(scale=3, min_width=320, elem_id="left-col"):
+            # -----------------------------------------------------------------
+            # COLUMN 1: LEFT SIDEBAR (DOCUMENTS & CHUNKS)
+            # -----------------------------------------------------------------
+            with gr.Column(scale=3, min_width=280, elem_id="col-sidebar"):
                 
                 # 1. Upload Feature
                 with gr.Group():
                     gr.HTML("""
-                    <div class="panel-header">
-                        <h3 class="panel-header-title">📥 Upload Documents</h3>
-                        <span class="panel-header-badge">PDF / MD</span>
+                    <div class="sidebar-section-title">
+                        <span>📥 Ingest Documents</span>
+                        <span style="font-size: 0.68rem; color: #64748b;">PDF / MD</span>
                     </div>
                     """)
                     files_input = gr.File(
-                        label="Drop PDF or Markdown files here",
+                        label="Drop PDF or Markdown files",
                         file_count="multiple",
                         type="filepath",
-                        height=100,
+                        height=90,
                         show_label=False
                     )
-                    upload_btn = gr.Button("⚡ Ingest & Process Chunks", variant="primary", size="md")
+                    upload_btn = gr.Button("⚡ Ingest & Process Chunks", variant="primary", size="sm")
 
                 # 2. Uploaded Documents List
                 with gr.Group():
                     gr.HTML("""
-                    <div class="panel-header" style="margin-top: 14px;">
-                        <h3 class="panel-header-title">📚 Uploaded Documents</h3>
-                        <span class="panel-header-badge" style="color: #34d399; border-color: rgba(52, 211, 153, 0.3);">Knowledge Base</span>
+                    <div class="sidebar-section-title" style="margin-top: 10px;">
+                        <span>📚 Knowledge Base Docs</span>
+                        <span style="color: #34d399; font-size: 0.68rem;">Live</span>
                     </div>
                     """)
                     doc_list_display = gr.HTML(value=format_doc_list_html(initial_analytics))
@@ -214,66 +204,72 @@ def create_gradio_ui():
                 # 3. Chunking Strategy & Processed Count
                 with gr.Group():
                     gr.HTML("""
-                    <div class="panel-header" style="margin-top: 14px;">
-                        <h3 class="panel-header-title">🧩 Chunking Strategy & Analytics</h3>
-                        <span class="panel-header-badge" style="color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);">Hierarchy</span>
+                    <div class="sidebar-section-title" style="margin-top: 10px;">
+                        <span>🧩 Chunk Strategy & Stats</span>
+                        <span style="color: #60a5fa; font-size: 0.68rem;">Hierarchy</span>
                     </div>
                     """)
                     chunk_analytics_display = gr.HTML(value=format_chunk_analytics_html(initial_analytics))
 
-            # =================================================================
-            # MIDDLE LAYER: Chat Box & Search Results
-            # =================================================================
-            with gr.Column(scale=5, min_width=480, elem_id="mid-col"):
+            # -----------------------------------------------------------------
+            # COLUMN 2: MIDDLE MAIN CHAT & RETRIEVED SEARCH RESULTS
+            # -----------------------------------------------------------------
+            with gr.Column(scale=6, min_width=460, elem_id="col-chat"):
                 
                 gr.HTML("""
-                <div class="panel-header">
-                    <h3 class="panel-header-title">💬 Agent Assistant Conversation</h3>
-                    <span class="panel-header-badge" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.3);">Autonomous Reasoning</span>
+                <div class="chat-column-header">
+                    <span style="font-weight: 700; font-size: 0.88rem; color: #ffffff; display: flex; align-items: center; gap: 6px;">
+                        💬 Conversation & Agent Reasoning
+                    </span>
+                    <span style="font-size: 0.72rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.15); padding: 2px 8px; border-radius: 4px;">
+                        Hybrid Qdrant + BM25
+                    </span>
                 </div>
                 """)
                 
                 chatbot = gr.Chatbot(
-                    height=480,
-                    placeholder="<strong>Ask me anything about your documents!</strong><br><em style='color: #94a3b8;'>I will analyze your query, execute hybrid search across child/parent chunks, and reason through the answer.</em>",
+                    placeholder="<strong>Ask anything about your ingested documents!</strong><br><span style='color: #64748b;'>The agent will analyze the query, execute hybrid retrieval, and synthesize an answer.</span>",
                     show_label=False,
                     avatar_images=(None, BOT_AVATAR),
                     layout="bubble",
                 )
 
-                with gr.Row(elem_id="chat-input-row"):
-                    msg_input = gr.Textbox(
-                        placeholder="Ask a question about your documents...",
-                        show_label=False,
-                        scale=8,
-                        elem_id="chat-input-box",
-                        container=False,
-                        autofocus=True
-                    )
-                    send_btn = gr.Button("Send", variant="primary", scale=2, min_width=80)
-                    clear_chat_btn = gr.Button("🧹 Clear", variant="secondary", scale=1, min_width=70)
-
-                # Middle Layer: Search Results section directly below the chat
-                with gr.Accordion("🔍 Retrieved Search Results & Excerpts", open=True, elem_id="search-accordion"):
+                # Search Results Drawer directly in the middle column
+                with gr.Accordion("🔍 Retrieved Search Results & Excerpts", open=False, elem_id="search-accordion"):
                     search_results_display = gr.HTML(
                         value=chat_interface.get_search_results_markdown(),
                         elem_id="search-results-panel"
                     )
 
-            # =================================================================
-            # RIGHT HAND SIDE: Observability of Agent Calls, Memory Calls, etc.
-            # =================================================================
-            with gr.Column(scale=4, min_width=340, elem_id="right-col"):
+                with gr.Row(elem_id="chat-input-row"):
+                    msg_input = gr.Textbox(
+                        placeholder="Type a message or question...",
+                        show_label=False,
+                        scale=8,
+                        elem_id="chat-input-box",
+                        container=False,
+                        autofocus=False
+                    )
+                    send_btn = gr.Button("Send", variant="primary", scale=2, min_width=75)
+                    clear_chat_btn = gr.Button("🧹 Clear", variant="secondary", scale=1, min_width=65)
+
+            # -----------------------------------------------------------------
+            # COLUMN 3: RIGHT INSPECTOR PANEL (OBSERVABILITY & MEMORY)
+            # -----------------------------------------------------------------
+            with gr.Column(scale=3, min_width=290, elem_id="col-inspector"):
                 
-                gr.HTML("""
-                <div class="panel-header">
-                    <h3 class="panel-header-title">🛰️ Observability & Agent Traces</h3>
-                    <span class="panel-header-badge" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">Real-Time Diagnostics</span>
-                </div>
-                """)
+                gr.HTML(
+                    f"""
+                    <div class="inspector-profile">
+                        <div class="inspector-avatar">🤖</div>
+                        <h4 class="inspector-name">Agent Diagnostics</h4>
+                        <div class="inspector-desc">{provider} / {model_name}</div>
+                    </div>
+                    """
+                )
                 
                 with gr.Tabs(elem_id="observability-tabs"):
-                    with gr.Tab("📡 Agent Calls & Trace"):
+                    with gr.Tab("📡 Agent Traces"):
                         observability_display = gr.HTML(
                             value=chat_interface.get_observability_markdown(),
                             elem_id="observability-panel"
@@ -287,13 +283,12 @@ def create_gradio_ui():
                 with gr.Row():
                     refresh_obs_btn = gr.Button("🔄 Refresh", variant="secondary", size="sm")
                     flush_traces_btn = gr.Button("⚡ Flush Traces", variant="secondary", size="sm")
-                    reset_session_btn = gr.Button("🗑️ Reset Thread", variant="stop", size="sm")
+                    reset_session_btn = gr.Button("🗑️ Reset Session", variant="stop", size="sm")
 
         # =====================================================================
         # EVENT HANDLERS & WIRING
         # =====================================================================
         
-        # --- Document Upload & Management Handlers ---
         def upload_handler(files, progress=gr.Progress()):
             if not files:
                 analytics = doc_manager.get_chunk_analytics()
@@ -314,7 +309,7 @@ def create_gradio_ui():
         def clear_docs_handler():
             try:
                 doc_manager.clear_all()
-                gr.Info("🗑️ Removed all documents & cleared vector chunks")
+                gr.Info("🗑️ Cleared all documents and vector chunks")
             except Exception as exc:
                 gr.Error(f"Unable to clear documents: {exc}")
             analytics = doc_manager.get_chunk_analytics()
@@ -337,7 +332,6 @@ def create_gradio_ui():
             outputs=[doc_list_display, chunk_analytics_display]
         )
 
-        # --- Chat & Real-Time Observability Streaming ---
         def user_submit(message, history):
             msg_str = (message or "").strip()
             if not msg_str:
@@ -350,14 +344,13 @@ def create_gradio_ui():
                 )
                 return
 
-            # Append user message
             user_msg = {"role": "user", "content": msg_str}
             current_history = history + [user_msg]
             
             yield (
                 "",
                 current_history,
-                '<div style="padding: 16px; text-align: center; color: #a5b4fc; font-size: 0.88rem; background: rgba(99, 102, 241, 0.08); border: 1px dashed rgba(99, 102, 241, 0.3); border-radius: 8px;">⏳ <em>Agent analyzing query and executing hybrid retrieval across chunks...</em></div>',
+                '<div style="padding: 12px; text-align: center; color: #a5b4fc; font-size: 0.82rem; background: rgba(99, 102, 241, 0.08); border-radius: 6px;">⏳ <em>Agent analyzing query and executing hybrid retrieval...</em></div>',
                 chat_interface.get_observability_markdown(),
                 chat_interface.get_memory_markdown(),
             )
