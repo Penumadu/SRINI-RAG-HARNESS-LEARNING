@@ -105,6 +105,120 @@ def format_chunk_analytics_html(analytics: dict) -> str:
     """
 
 
+SPLITTER_JS = """
+() => {
+    function setupSplitters() {
+        const leftCol = document.getElementById('col-sidebar');
+        const midCol = document.getElementById('col-chat');
+        const rightCol = document.getElementById('col-inspector');
+        if (!leftCol || !midCol || !rightCol) {
+            setTimeout(setupSplitters, 200);
+            return;
+        }
+
+        const sliderLeftInput = document.querySelector('#slider-left input[type="range"]');
+        const sliderRightInput = document.querySelector('#slider-right input[type="range"]');
+
+        // Direct Range input listeners for buttery-smooth instant column resizing
+        if (sliderLeftInput && !sliderLeftInput.dataset.bound) {
+            sliderLeftInput.dataset.bound = 'true';
+            sliderLeftInput.addEventListener('input', (e) => {
+                const val = e.target.value;
+                leftCol.style.setProperty('flex', `0 0 ${val}px`, 'important');
+                leftCol.style.setProperty('max-width', `${val}px`, 'important');
+                leftCol.style.setProperty('min-width', `${val}px`, 'important');
+                leftCol.style.setProperty('width', `${val}px`, 'important');
+                const badge = document.getElementById('left-col-val');
+                if (badge) badge.textContent = `${val}px`;
+            });
+        }
+
+        if (sliderRightInput && !sliderRightInput.dataset.bound) {
+            sliderRightInput.dataset.bound = 'true';
+            sliderRightInput.addEventListener('input', (e) => {
+                const val = e.target.value;
+                rightCol.style.setProperty('flex', `0 0 ${val}px`, 'important');
+                rightCol.style.setProperty('max-width', `${val}px`, 'important');
+                rightCol.style.setProperty('min-width', `${val}px`, 'important');
+                rightCol.style.setProperty('width', `${val}px`, 'important');
+                const badge = document.getElementById('right-col-val');
+                if (badge) badge.textContent = `${val}px`;
+            });
+        }
+        
+        // Draggable vertical divider 1 (Left sidebar <-> Center chat)
+        if (!document.getElementById('splitter-left')) {
+            const splitL = document.createElement('div');
+            splitL.id = 'splitter-left';
+            splitL.className = 'col-splitter';
+            splitL.title = 'Drag to resize Left Column';
+            leftCol.parentNode.insertBefore(splitL, midCol);
+
+            let isDraggingL = false;
+            splitL.addEventListener('mousedown', (e) => {
+                isDraggingL = true;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!isDraggingL) return;
+                const newWidth = Math.max(180, Math.min(520, e.clientX));
+                leftCol.style.setProperty('flex', `0 0 ${newWidth}px`, 'important');
+                leftCol.style.setProperty('max-width', `${newWidth}px`, 'important');
+                leftCol.style.setProperty('min-width', `${newWidth}px`, 'important');
+                leftCol.style.setProperty('width', `${newWidth}px`, 'important');
+                if (sliderLeftInput) sliderLeftInput.value = newWidth;
+                const badge = document.getElementById('left-col-val');
+                if (badge) badge.textContent = `${newWidth}px`;
+            });
+            document.addEventListener('mouseup', () => {
+                if (isDraggingL) {
+                    isDraggingL = false;
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+
+        // Draggable vertical divider 2 (Center chat <-> Right inspector)
+        if (!document.getElementById('splitter-right')) {
+            const splitR = document.createElement('div');
+            splitR.id = 'splitter-right';
+            splitR.className = 'col-splitter';
+            splitR.title = 'Drag to resize Right Column';
+            midCol.parentNode.insertBefore(splitR, rightCol);
+
+            let isDraggingR = false;
+            splitR.addEventListener('mousedown', (e) => {
+                isDraggingR = true;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!isDraggingR) return;
+                const newWidth = Math.max(220, Math.min(580, window.innerWidth - e.clientX));
+                rightCol.style.setProperty('flex', `0 0 ${newWidth}px`, 'important');
+                rightCol.style.setProperty('max-width', `${newWidth}px`, 'important');
+                rightCol.style.setProperty('min-width', `${newWidth}px`, 'important');
+                rightCol.style.setProperty('width', `${newWidth}px`, 'important');
+                if (sliderRightInput) sliderRightInput.value = newWidth;
+                const badge = document.getElementById('right-col-val');
+                if (badge) badge.textContent = `${newWidth}px`;
+            });
+            document.addEventListener('mouseup', () => {
+                if (isDraggingR) {
+                    isDraggingR = false;
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+    }
+    setupSplitters();
+}
+"""
+
+
 def create_gradio_ui():
     rag_system = RAGSystem()
     rag_system.initialize()
@@ -137,7 +251,7 @@ def create_gradio_ui():
     with gr.Blocks(title="Srini RAG Harness Learning", fill_width=True, fill_height=True, theme=theme) as demo:
 
         # =====================================================================
-        # TOP APP HEADER BAR (Fixed 56px height)
+        # TOP APP HEADER BAR (Fixed 48px height, Clean Single Row)
         # =====================================================================
         with gr.Row(elem_id="app-header"):
             provider = getattr(config, 'LLM_PROVIDER', 'ollama')
@@ -145,36 +259,54 @@ def create_gradio_ui():
             langfuse_on = getattr(config, 'LANGFUSE_ENABLED', False)
 
             gr.HTML(
-                f"""
+                """
                 <div class="app-brand">
                     <span class="app-brand-badge">PROD</span>
-                    <h1 class="app-brand-title">⚡ Srini RAG Harness Learning</h1>
+                    <h1 class="app-brand-title">⚡ Srini RAG Harness</h1>
                 </div>
+                """
+            )
+
+            gr.HTML(
+                f"""
                 <div class="app-status-bar">
                     <span class="status-pill pill-green">
-                        <span class="status-dot" style="background: #34d399;"></span> Qdrant Hybrid
+                        <span class="status-dot" style="background: #10b981;"></span> Qdrant
                     </span>
                     <span class="status-pill pill-purple">
-                        <span class="status-dot" style="background: #c084fc;"></span> {provider}:{model_name}
+                        <span class="status-dot" style="background: #4C426D;"></span> {provider}:{model_name}
                     </span>
                     <span class="status-pill {'pill-blue' if langfuse_on else ''}">
-                        <span class="status-dot" style="background: {'#60a5fa' if langfuse_on else '#64748b'};"></span>
-                        {'Langfuse Active' if langfuse_on else 'Langfuse Off'}
+                        <span class="status-dot" style="background: {'#3b82f6' if langfuse_on else '#94a3b8'};"></span>
+                        {'Langfuse' if langfuse_on else 'No Tracing'}
                     </span>
                 </div>
                 """
             )
 
         # =====================================================================
-        # MAIN 3-COLUMN SEAMLESS CONTAINER (height: calc(100vh - 56px))
+        # MAIN 3-COLUMN SEAMLESS CONTAINER (height: calc(100vh - 48px))
         # =====================================================================
         with gr.Row(elem_id="app-3-columns", equal_height=True):
             
             # -----------------------------------------------------------------
             # COLUMN 1: LEFT SIDEBAR (DOCUMENTS & CHUNKS)
             # -----------------------------------------------------------------
-            with gr.Column(scale=3, min_width=280, elem_id="col-sidebar"):
+            with gr.Column(scale=3, min_width=200, elem_id="col-sidebar"):
                 
+                # Column Width Slider for Left Sidebar
+                with gr.Group(elem_id="sidebar-width-control"):
+                    gr.HTML('<div class="col-slider-label"><span>📐 Left Column Size</span><span id="left-col-val" class="col-slider-val">290px</span></div>')
+                    left_slider = gr.Slider(
+                        minimum=180,
+                        maximum=520,
+                        value=290,
+                        step=10,
+                        show_label=False,
+                        container=False,
+                        elem_id="slider-left"
+                    )
+
                 # 1. Upload Feature
                 with gr.Group():
                     gr.HTML("""
@@ -259,21 +391,34 @@ def create_gradio_ui():
                     clear_chat_btn = gr.Button("🧹 Clear", variant="secondary", scale=1, min_width=65)
 
             # -----------------------------------------------------------------
-            # COLUMN 3: RIGHT INSPECTOR PANEL (OBSERVABILITY & MEMORY)
+            # COLUMN 3: RIGHT INSPECTOR PANEL (Compact Header with Tabs at Top)
             # -----------------------------------------------------------------
-            with gr.Column(scale=3, min_width=290, elem_id="col-inspector"):
+            with gr.Column(scale=3, min_width=260, elem_id="col-inspector"):
                 
                 gr.HTML(
                     f"""
-                    <div class="inspector-profile">
-                        <div class="info-avatar">🤖</div>
-                        <p class="info-name">Srini RAG Agent</p>
-                        <p class="info-description">
-                            Hierarchical hybrid retrieval agent with LangGraph pipeline orchestration, Qdrant vector memory, and {provider}:{model_name} reasoning.
-                        </p>
+                    <div class="compact-agent-header">
+                        <div class="compact-agent-left">
+                            <span class="compact-avatar">🤖</span>
+                            <span class="compact-title">Srini RAG Agent</span>
+                        </div>
+                        <span class="compact-badge">{provider}:{model_name}</span>
                     </div>
                     """
                 )
+
+                # Column Width Slider for Right Inspector
+                with gr.Group(elem_id="inspector-width-control"):
+                    gr.HTML('<div class="col-slider-label"><span>📐 Right Column Size</span><span id="right-col-val" class="col-slider-val">320px</span></div>')
+                    right_slider = gr.Slider(
+                        minimum=220,
+                        maximum=580,
+                        value=320,
+                        step=10,
+                        show_label=False,
+                        container=False,
+                        elem_id="slider-right"
+                    )
                 
                 with gr.Tabs(elem_id="observability-tabs"):
                     with gr.Tab("📡 Agent Traces"):
@@ -433,4 +578,33 @@ def create_gradio_ui():
             outputs=[chatbot, search_results_display, observability_display, memory_display]
         )
 
+        # Real-time column resizing via Sliders
+        left_resize_js = """(val) => {
+            const col = document.getElementById('col-sidebar');
+            if (col) {
+                col.style.setProperty('flex', `0 0 ${val}px`, 'important');
+                col.style.setProperty('max-width', `${val}px`, 'important');
+                col.style.setProperty('min-width', `${val}px`, 'important');
+                col.style.setProperty('width', `${val}px`, 'important');
+            }
+            const badge = document.getElementById('left-col-val');
+            if (badge) badge.textContent = `${val}px`;
+        }"""
+        right_resize_js = """(val) => {
+            const col = document.getElementById('col-inspector');
+            if (col) {
+                col.style.setProperty('flex', `0 0 ${val}px`, 'important');
+                col.style.setProperty('max-width', `${val}px`, 'important');
+                col.style.setProperty('min-width', `${val}px`, 'important');
+                col.style.setProperty('width', `${val}px`, 'important');
+            }
+            const badge = document.getElementById('right-col-val');
+            if (badge) badge.textContent = `${val}px`;
+        }"""
+        left_slider.input(fn=None, inputs=[left_slider], js=left_resize_js)
+        left_slider.change(fn=None, inputs=[left_slider], js=left_resize_js)
+        right_slider.input(fn=None, inputs=[right_slider], js=right_resize_js)
+        right_slider.change(fn=None, inputs=[right_slider], js=right_resize_js)
+
     return demo
+

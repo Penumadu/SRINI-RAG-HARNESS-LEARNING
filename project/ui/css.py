@@ -76,7 +76,7 @@ footer {
 }
 
 /* ==========================================================================
-   TOP APPLICATION BAR (Clean White Header)
+   TOP APPLICATION BAR (Clean White Header with Width Sliders)
    ========================================================================== */
 #app-header {
     height: 48px !important;
@@ -85,57 +85,146 @@ footer {
     flex-shrink: 0 !important;
     background: #ffffff !important;
     border-bottom: 1px solid var(--border-color) !important;
-    padding: 0 20px !important;
+    padding: 0 16px !important;
     margin: 0 !important;
     display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: space-between !important;
-    z-index: 10;
+    z-index: 100 !important;
+    box-sizing: border-box !important;
 }
 
 .app-brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .app-brand-badge {
     background: rgba(76, 66, 109, 0.08);
     border: 1px solid rgba(76, 66, 109, 0.2);
     color: var(--primary-color);
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 800;
-    padding: 2px 7px;
+    padding: 2px 6px;
     border-radius: 4px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
 
 .app-brand-title {
-    font-size: 1.05rem;
+    font-size: 0.98rem;
     font-weight: 800;
     color: var(--text-primary);
     margin: 0;
     letter-spacing: -0.2px;
+    white-space: nowrap;
+}
+
+/* Column Width Controls inside Left Sidebar & Right Inspector */
+#sidebar-width-control,
+#inspector-width-control {
+    background: var(--background-color) !important;
+    border: 1px solid var(--border-card) !important;
+    border-radius: 8px !important;
+    padding: 4px 10px !important;
+    margin: 0 0 6px 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+#sidebar-width-control .wrap,
+#inspector-width-control .wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+}
+
+#sidebar-width-control .head,
+#inspector-width-control .head {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+#sidebar-width-control label,
+#inspector-width-control label {
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+}
+
+#sidebar-width-control input[type="range"],
+#inspector-width-control input[type="range"] {
+    height: 4px !important;
+    margin: 4px 0 0 0 !important;
+    width: 100% !important;
+    accent-color: var(--primary-color) !important;
+    cursor: pointer !important;
+}
+
+.col-slider-label {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    margin-bottom: 2px !important;
+}
+
+.col-slider-val {
+    font-size: 0.70rem !important;
+    font-weight: 800 !important;
+    color: var(--primary-color) !important;
+    background: #ffffff !important;
+    border: 1px solid var(--border-card) !important;
+    border-radius: 4px !important;
+    padding: 1px 6px !important;
+}
+
+#sidebar-width-control input[type="number"],
+#inspector-width-control input[type="number"],
+#sidebar-width-control button,
+#inspector-width-control button {
+    display: none !important;
 }
 
 .app-status-bar {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .status-pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 3px 10px;
+    gap: 5px;
+    padding: 3px 8px;
     border-radius: 20px;
-    font-size: 0.72rem;
+    font-size: 0.70rem;
     font-weight: 600;
     border: 1px solid var(--border-card);
     background: var(--background-color);
     color: var(--text-secondary);
+    white-space: nowrap;
 }
 
 .pill-green {
@@ -162,6 +251,26 @@ footer {
     border-radius: 50%;
 }
 
+/* Draggable Vertical Splitter Handles */
+.col-splitter {
+    width: 6px !important;
+    min-width: 6px !important;
+    max-width: 6px !important;
+    height: 100% !important;
+    background: transparent !important;
+    cursor: col-resize !important;
+    position: relative !important;
+    z-index: 10 !important;
+    transition: background 0.15s ease !important;
+    flex-shrink: 0 !important;
+    margin: 0 -3px !important;
+}
+
+.col-splitter:hover,
+.col-splitter:active {
+    background: var(--primary-color) !important;
+}
+
 /* ==========================================================================
    3-COLUMN MAIN LAYOUT
    ========================================================================== */
@@ -184,8 +293,9 @@ footer {
    ========================================================================== */
 #col-sidebar {
     flex: 0 0 290px !important;
-    max-width: 320px !important;
-    min-width: 270px !important;
+    width: 290px !important;
+    min-width: 180px !important;
+    max-width: 550px !important;
     height: 100% !important;
     max-height: 100% !important;
     border-right: 1px solid var(--border-color) !important;
@@ -514,52 +624,66 @@ div[class*="bot"] > .message {
 }
 
 /* ==========================================================================
-   RIGHT COLUMN: INSPECTOR PANEL (dom-the-dev info style)
+   RIGHT COLUMN: INSPECTOR PANEL (Compact Header with Tabs at Top)
    ========================================================================== */
 #col-inspector {
-    flex: 0 0 310px !important;
-    max-width: 350px !important;
-    min-width: 280px !important;
+    flex: 0 0 320px !important;
+    width: 320px !important;
+    min-width: 220px !important;
+    max-width: 600px !important;
     height: 100% !important;
     max-height: 100% !important;
     background: #ffffff !important;
     overflow-y: auto !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 12px !important;
-    padding: 14px !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
     box-sizing: border-box !important;
 }
 
-/* dom-the-dev exact info classes */
-.info-avatar {
-    width: 86px;
-    height: 86px;
-    border-radius: 9999px;
+/* Compact Agent Header taking minimal space */
+.compact-agent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: var(--background-color);
+    border: 1px solid var(--border-card);
+    border-radius: 8px;
+    margin-bottom: 2px;
+}
+
+.compact-agent-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.compact-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
     background-color: var(--avatar-bg);
-    margin: 15px auto 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.2rem;
-    color: #ffffff;
+    font-size: 0.90rem;
 }
 
-.info-name {
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-    margin-top: 12px;
-    margin-bottom: 0;
+.compact-title {
+    font-weight: 700;
+    font-size: 0.84rem;
     color: var(--text-primary);
 }
 
-.info-description {
-    margin: 8px 12px 14px;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 12px;
-    line-height: 1.5;
+.compact-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    background: rgba(76, 66, 109, 0.08);
+    padding: 2px 7px;
+    border-radius: 4px;
 }
 
 /* Boxes inside Right Column */
@@ -598,7 +722,7 @@ div[class*="bot"] > .message {
     border: 1px solid var(--border-card) !important;
     border-radius: 8px !important;
     padding: 10px !important;
-    max-height: 380px !important;
+    max-height: calc(100vh - 200px) !important;
     overflow-y: auto !important;
 }
 
