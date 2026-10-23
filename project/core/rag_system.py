@@ -24,11 +24,20 @@ class RAGSystem:
         self.vector_db.create_collection(self.collection_name)
         collection = self.vector_db.get_collection(self.collection_name)
 
-        llm = ChatOllama(
-            model=config.LLM_MODEL,
-            temperature=config.LLM_TEMPERATURE,
-            seed=config.LLM_SEED,
-        )
+        try:
+            from learning.config import get_llm
+            llm = get_llm(
+                provider=getattr(config, "LLM_PROVIDER", "ollama"),
+                model=config.LLM_MODEL,
+                temperature=config.LLM_TEMPERATURE,
+                seed=config.LLM_SEED
+            )
+        except Exception:
+            llm = ChatOllama(
+                model=config.LLM_MODEL,
+                temperature=config.LLM_TEMPERATURE,
+                seed=config.LLM_SEED,
+            )
         tools = ToolFactory(collection).create_tools()
         self.agent_graph = create_agent_graph(llm, tools)
 

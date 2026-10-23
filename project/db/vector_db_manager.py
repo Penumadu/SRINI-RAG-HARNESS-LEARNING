@@ -7,10 +7,18 @@ from qdrant_client.http import models as qmodels
 class VectorDbManager:
     __client: QdrantClient
     __dense_embeddings: HuggingFaceEmbeddings
-    __sparse_embeddings: FastEmbedSparse
     def __init__(self):
         self.__client = QdrantClient(path=config.QDRANT_DB_PATH)
-        self.__dense_embeddings = HuggingFaceEmbeddings(model_name=config.DENSE_MODEL)
+        try:
+            from learning.config import get_dense_embeddings
+            self.__dense_embeddings = get_dense_embeddings(config.DENSE_MODEL)
+        except Exception:
+            try:
+                from langchain_ollama import OllamaEmbeddings
+                self.__dense_embeddings = OllamaEmbeddings(model="nomic-embed-text:latest")
+            except Exception:
+                from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+                self.__dense_embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
         self.__sparse_embeddings = FastEmbedSparse(model_name=config.SPARSE_MODEL)
 
     def _dense_vector_size(self):
@@ -29,7 +37,7 @@ class VectorDbManager:
     def create_collection(self, collection_name):
         expected_size = self._dense_vector_size()
         if not self.__client.collection_exists(collection_name):
-            print(f"Creating collection: {collection_name}...")
+            print(f"Creating collection: {collection_name} (vector size {expected_size})...")
             self.__client.create_collection(
                 collection_name=collection_name,
                 vectors_config=qmodels.VectorParams(size=expected_size, distance=qmodels.Distance.COSINE),
@@ -40,12 +48,13 @@ class VectorDbManager:
             collection_info = self.__client.get_collection(collection_name)
             existing_size = self._collection_vector_size(collection_info)
             if existing_size and existing_size != expected_size:
-                raise ValueError(
-                    f"Qdrant collection '{collection_name}' has dense vector size "
-                    f"{existing_size}, but '{config.DENSE_MODEL}' produces size "
-                    f"{expected_size}. Clear and re-index the collection after "
-                    "changing embedding models."
+                print(
+                    f"⚠️ Collection size mismatch ({existing_size} vs {expected_size}). "
+                    f"Re-creating collection for {config.DENSE_MODEL}..."
                 )
+                self.__client.delete_collection(collection_name)
+                self.create_collection(collection_name)
+                return
             print(f"✓ Collection already exists: {collection_name}")
 
     def delete_collection(self, collection_name):

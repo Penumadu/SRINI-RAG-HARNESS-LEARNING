@@ -1,4 +1,12 @@
 import os
+from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
+except ImportError:
+    pass
 
 # --- Directory Configuration ---
 _BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -12,12 +20,13 @@ CHILD_COLLECTION = "document_child_chunks"
 SPARSE_VECTOR_NAME = "sparse"
 
 # --- Model Configuration ---
-DENSE_MODEL = "Qwen/Qwen3-Embedding-0.6B"
-SPARSE_MODEL = "Qdrant/bm25"
-LLM_MODEL = "granite4.1:8b"
-JUDGE_MODEL = "ministral-3:3b-instruct-2512-q8_0"
-LLM_TEMPERATURE = 0
-LLM_SEED = 42
+DENSE_MODEL = os.environ.get("DENSE_MODEL", "Qwen/Qwen3-Embedding-0.6B")
+SPARSE_MODEL = os.environ.get("SPARSE_MODEL", "Qdrant/bm25")
+LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "ollama").lower()
+LLM_MODEL = os.environ.get("LLM_MODEL", "granite4.1:8b")
+JUDGE_MODEL = os.environ.get("JUDGE_MODEL", "ministral-3:3b-instruct-2512-q8_0")
+LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", 0))
+LLM_SEED = int(os.environ.get("LLM_SEED", 42))
 
 # --- Retrieval Configuration ---
 RETRIEVAL_SCORE_THRESHOLD = 0.4
@@ -50,6 +59,6 @@ HEADERS_TO_SPLIT_ON = [
 
 # --- Langfuse Observability ---
 LANGFUSE_ENABLED = os.environ.get("LANGFUSE_ENABLED", "false").lower() == "true"
-LANGFUSE_PUBLIC_KEY = os.environ.get("LANGFUSE_PUBLIC_KEY", "")
-LANGFUSE_SECRET_KEY = os.environ.get("LANGFUSE_SECRET_KEY", "")
+LANGFUSE_PUBLIC_KEY = os.environ.get("LANGFUSE_PUBLIC_KEY", "pk-lf-8f745afb-1b17-4fd3-9cd6-f7d1c745df42")
+LANGFUSE_SECRET_KEY = os.environ.get("LANGFUSE_SECRET_KEY", "sk-lf-094ccfe2-979b-4cb2-b827-90c0fa413d6d")
 LANGFUSE_BASE_URL = os.environ.get("LANGFUSE_BASE_URL", "http://localhost:3000")

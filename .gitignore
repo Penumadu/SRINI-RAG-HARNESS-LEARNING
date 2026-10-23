@@ -1,20 +1,43 @@
+# Operating System
 .DS_Store
+Thumbs.db
+
+# Python bytecode & cache
 __pycache__/
-.vscode/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments & secrets
 .env
+*.env
+!.env.example
+.env.local
 .venv/
 venv/
+ENV/
+env/
 
+# IDE & editors
+.vscode/
+.idea/
+
+# Local Vector DB & Store
 qdrant_db/
-markdown_docs/
 parent_store/
+markdown_docs/
 docs/
 
-notebooks/output.csv
-
+# Evaluation outputs & logs
+*.log
+output.csv
 ragas_*.csv
 rag_evaluation_*.csv
 rag_evaluation_*.png
+notebooks/output.csv
 notebooks/ragas_*.csv
 notebooks/rag_evaluation_*.csv
 notebooks/rag_evaluation_*.png
