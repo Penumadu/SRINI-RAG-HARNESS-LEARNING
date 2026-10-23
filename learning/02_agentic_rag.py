@@ -730,35 +730,28 @@ def launch_ui(agent_graph):
 
     thread_id = str(uuid.uuid4())
 
-    def respond(message, chat_history):
+    def respond(message, history):
         nonlocal thread_id
         run_config = {"configurable": {"thread_id": thread_id}}
         result = agent_graph.invoke(
             {"messages": [HumanMessage(content=message)]},
             config=run_config
         )
-        bot_response = result["messages"][-1].content
-        chat_history.append({"role": "user", "content": message})
-        chat_history.append({"role": "assistant", "content": bot_response})
-        return "", chat_history
+        return result["messages"][-1].content
 
-    with gr.Blocks(title="Agentic RAG Assistant") as demo:
-        gr.Markdown("# 🤖 Agentic RAG Assistant\n*Hierarchical Retrieval + LangGraph Reasoning*")
-        chatbot = gr.Chatbot(type="messages", height=500)
-        with gr.Row():
-            msg_input = gr.Textbox(placeholder="Ask a question about the indexed documents...", scale=8)
-            send_btn = gr.Button("Send", variant="primary", scale=2)
-        clear_btn = gr.Button("Clear Session")
+    def clear_session():
+        nonlocal thread_id
+        thread_id = str(uuid.uuid4())
 
-        send_btn.click(respond, [msg_input, chatbot], [msg_input, chatbot])
-        msg_input.submit(respond, [msg_input, chatbot], [msg_input, chatbot])
-
-        def clear_session():
-            nonlocal thread_id
-            thread_id = str(uuid.uuid4())
-            return []
-
-        clear_btn.click(clear_session, None, chatbot)
+    with gr.Blocks(title="Srini RAG Harness Assistant") as demo:
+        gr.Markdown(
+            "# 🤖 Srini RAG Harness Assistant\n"
+            "*Hierarchical Retrieval (Qdrant + BM25) • LangGraph Reasoning • Ollama (qwen3.5:9b)*"
+        )
+        gr.ChatInterface(
+            fn=respond,
+            chatbot=gr.Chatbot(height=550),
+        )
 
     print("\n🚀 Launching Gradio UI on http://127.0.0.1:7860...")
     demo.launch(server_name="127.0.0.1", server_port=7860, inbrowser=True)
