@@ -196,26 +196,26 @@ class ChatInterface:
 
         html_blocks = [
             f"""
-            <div style="margin-bottom: 12px; padding: 10px 14px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px;">
-                <div style="font-size: 0.72rem; font-weight: 700; color: #a5b4fc; text-transform: uppercase;">Active Search Query</div>
-                <div style="font-size: 0.90rem; font-weight: 600; color: #ffffff; margin-top: 2px;">{self.last_query}</div>
+            <div style="margin-bottom: 10px; padding: 8px 12px; background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <div style="font-size: 0.70rem; font-weight: 700; color: #4C426D; text-transform: uppercase;">Active Search Query</div>
+                <div style="font-size: 0.86rem; font-weight: 600; color: #1e293b; margin-top: 2px;">{self.last_query}</div>
             </div>
             """
         ]
 
         if self.rewritten_questions:
-            questions_html = "".join([f'<li style="margin-bottom: 3px; color: #cbd5e1;"><code>{q}</code></li>' for q in self.rewritten_questions])
+            questions_html = "".join([f'<li style="margin-bottom: 2px; color: #334155;"><code style="background: #F6F7FB; padding: 2px 5px; border-radius: 4px; font-size: 0.75rem;">{q}</code></li>' for q in self.rewritten_questions])
             html_blocks.append(f"""
-            <div style="margin-bottom: 12px;">
-                <div style="font-size: 0.74rem; font-weight: 700; color: #c084fc; text-transform: uppercase; margin-bottom: 4px;">🔄 Rewritten Sub-Queries</div>
-                <ul style="margin: 0; padding-left: 20px; font-size: 0.82rem;">{questions_html}</ul>
+            <div style="margin-bottom: 10px;">
+                <div style="font-size: 0.72rem; font-weight: 700; color: #4C426D; text-transform: uppercase; margin-bottom: 4px;">🔄 Rewritten Sub-Queries</div>
+                <ul style="margin: 0; padding-left: 18px; font-size: 0.78rem;">{questions_html}</ul>
             </div>
             """)
 
         if not self.search_results:
             html_blocks.append("""
-            <div style="padding: 12px; background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 8px; color: #94a3b8; font-size: 0.80rem;">
-                ℹ️ No child chunks were retrieved for this turn. The agent answered directly from context or conversation history.
+            <div style="padding: 10px; background: #F6F7FB; border: 1px dashed #cbd5e1; border-radius: 6px; color: #64748b; font-size: 0.78rem;">
+                ℹ️ No child chunks retrieved for this turn. The agent answered directly from context or conversation history.
             </div>
             """)
         else:
@@ -225,8 +225,8 @@ class ChatInterface:
                 cards.append(f"""
                 <div class="search-chunk-card">
                     <div class="search-chunk-header">
-                        <span style="font-weight: 700; color: #f1f5f9; display: flex; align-items: center; gap: 6px;">
-                            <span style="color: #38bdf8;">#{i}</span> 📄 {r['file_name']}
+                        <span style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                            <span style="color: #4C426D;">#{i}</span> 📄 {r['file_name']}
                         </span>
                         {parent_badge}
                     </div>
@@ -256,10 +256,10 @@ class ChatInterface:
         for num, node_name, desc in pipeline_nodes:
             is_active = (node_name == active) or (node_name in active)
             active_class = "active" if is_active else ""
-            dot_color = "#34d399" if is_active else ("#6366f1" if status == "Completed" else "#475569")
+            dot_color = "#10b981" if is_active else ("#4C426D" if status == "Completed" else "#cbd5e1")
             stepper_items.append(f"""
             <div class="stepper-item {active_class}">
-                <div class="stepper-num" style="background: rgba(99, 102, 241, {'0.35' if is_active else '0.15'});">{num}</div>
+                <div class="stepper-num">{num}</div>
                 <div style="flex: 1;">
                     <div class="stepper-title" style="display: flex; align-items: center; justify-content: space-between;">
                         <span>{node_name}</span>
@@ -274,7 +274,7 @@ class ChatInterface:
         if not self.events_log:
             event_rows.append("""
             <tr>
-                <td colspan="4" style="text-align: center; color: #64748b; padding: 14px;">
+                <td colspan="4" style="text-align: center; color: #94a3b8; padding: 12px;">
                     No execution events recorded yet. Send a query to observe live agent calls.
                 </td>
             </tr>
@@ -283,38 +283,38 @@ class ChatInterface:
             for ev in reversed(self.events_log[-10:]):
                 event_rows.append(f"""
                 <tr>
-                    <td style="font-family: 'JetBrains Mono', monospace; color: #38bdf8;">{ev['time']}</td>
-                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #cbd5e1;">{ev['node']}</td>
-                    <td><strong style="color: #e2e8f0;">{ev['type']}</strong></td>
-                    <td style="color: #94a3b8;">{ev['detail']}</td>
+                    <td style="font-family: monospace; color: #4C426D; font-weight: 600;">{ev['time']}</td>
+                    <td style="font-family: monospace; font-weight: 600; color: #1e293b;">{ev['node']}</td>
+                    <td><strong style="color: #334155;">{ev['type']}</strong></td>
+                    <td style="color: #64748b;">{ev['detail']}</td>
                 </tr>
                 """)
 
         return f"""
-        <div style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 90px; background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px; text-align: center;">
-                <div style="font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Status</div>
-                <div style="font-size: 0.92rem; font-weight: 700; color: {'#34d399' if status in ('Ready', 'Completed') else '#60a5fa'};">{status}</div>
+        <div class="obs-stat-row">
+            <div class="obs-stat-card">
+                <div class="obs-stat-label">Status</div>
+                <div class="obs-stat-val" style="color: {'#10b981' if status in ('Ready', 'Completed') else '#4C426D'};">{status}</div>
             </div>
-            <div style="flex: 1; min-width: 90px; background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px; text-align: center;">
-                <div style="font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Active Node</div>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #c084fc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{active}</div>
+            <div class="obs-stat-card">
+                <div class="obs-stat-label">Active Node</div>
+                <div class="obs-stat-val" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{active}</div>
             </div>
-            <div style="flex: 1; min-width: 90px; background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px; text-align: center;">
-                <div style="font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Tools Invoked</div>
-                <div style="font-size: 0.92rem; font-weight: 700; color: #f59e0b;">{tool_count}</div>
+            <div class="obs-stat-card">
+                <div class="obs-stat-label">Tools Invoked</div>
+                <div class="obs-stat-val">{tool_count}</div>
             </div>
         </div>
 
-        <div style="font-size: 0.74rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 6px 0;">
-            🔄 State Machine Pipeline
+        <div style="font-size: 0.72rem; font-weight: 700; color: #4C426D; text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 5px 0;">
+            State Machine Pipeline
         </div>
         <div class="stepper-list">
             {''.join(stepper_items)}
         </div>
 
-        <div style="font-size: 0.74rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 0 6px 0;">
-            📋 Execution Event Log (Latest First)
+        <div style="font-size: 0.72rem; font-weight: 700; color: #4C426D; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 5px 0;">
+            Execution Event Log (Latest First)
         </div>
         <table>
             <thead>
@@ -339,32 +339,32 @@ class ChatInterface:
         
         import config
         return f"""
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
-                <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Session Thread ID</div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.80rem; color: #38bdf8; word-break: break-all; margin-top: 3px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                <div style="font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Session Thread ID</div>
+                <div style="font-family: monospace; font-size: 0.76rem; color: #4C426D; font-weight: 600; word-break: break-all; margin-top: 2px;">
                     {tid}
                 </div>
             </div>
 
-            <div style="background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
-                <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Dialogue State</div>
-                <div style="font-size: 0.84rem; font-weight: 600; color: {'#fbbf24' if self.session_metrics.get('clarification_needed') else '#34d399'}; margin-top: 3px;">
+            <div style="background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                <div style="font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Dialogue State</div>
+                <div style="font-size: 0.80rem; font-weight: 600; color: {'#b45309' if self.session_metrics.get('clarification_needed') else '#059669'}; margin-top: 2px;">
                     {clarification}
                 </div>
             </div>
 
-            <div style="background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
-                <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Active LLM Runtime</div>
-                <div style="font-size: 0.82rem; color: #e2e8f0; margin-top: 3px;">
-                    Provider: <strong style="color: #c084fc;">{getattr(config, 'LLM_PROVIDER', 'ollama')}</strong> | 
-                    Model: <strong style="color: #38bdf8;">{getattr(config, 'LLM_MODEL', 'qwen3.5:9b')}</strong>
+            <div style="background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                <div style="font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Active LLM Runtime</div>
+                <div style="font-size: 0.78rem; color: #334155; margin-top: 2px;">
+                    Provider: <strong style="color: #4C426D;">{getattr(config, 'LLM_PROVIDER', 'ollama')}</strong> | 
+                    Model: <strong style="color: #4C426D;">{getattr(config, 'LLM_MODEL', 'qwen3.5:9b')}</strong>
                 </div>
             </div>
 
-            <div style="background: rgba(7, 10, 19, 0.55); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
-                <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">🧠 Working Memory Summary</div>
-                <div style="font-size: 0.80rem; color: #cbd5e1; line-height: 1.5; background: rgba(0, 0, 0, 0.3); border-left: 3px solid #6366f1; padding: 10px 12px; border-radius: 4px;">
+            <div style="background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                <div style="font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">Working Memory Summary</div>
+                <div style="font-size: 0.76rem; color: #334155; line-height: 1.5; background: #ffffff; border: 1px solid #e2e8f0; border-left: 3px solid #4C426D; padding: 8px 10px; border-radius: 4px;">
                     {summary}
                 </div>
             </div>

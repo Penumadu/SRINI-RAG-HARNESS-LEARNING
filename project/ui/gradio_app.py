@@ -17,25 +17,28 @@ def format_doc_list_html(analytics: dict) -> str:
     source_counts = analytics.get("source_counts", {})
     if not docs:
         return """
-        <div style="padding: 14px; text-align: center; color: #64748b; font-size: 0.80rem; background: rgba(0,0,0,0.2); border-radius: 6px;">
-            📭 No documents ingested yet.<br>Upload PDF or Markdown above.
+        <div class="chat-item" style="justify-content: center; text-align: center; color: #94a3b8; padding: 24px 8px;">
+            <div>
+                <p class="sender" style="color: #64748b; font-size: 0.82rem;">No documents uploaded</p>
+                <p class="preview" style="font-size: 0.72rem;">Drop PDF or Markdown above</p>
+            </div>
         </div>
         """
     
     rows = []
     for d in docs:
         ext = Path(d).suffix.lower()
-        badge_class = "badge-pdf" if ext == ".pdf" else "badge-md"
         count = source_counts.get(d, 0)
-        chunks_badge = f'<span class="badge-tag badge-chunks">{count} parents</span>' if count else ''
+        chunks_info = f"{count} parent chunks" if count else "Indexed"
+        badge_text = ext.replace('.', '').upper()[:3] or "DOC"
         
         rows.append(f"""
-        <div class="doc-row">
-            <div class="doc-row-title">
-                <span class="badge-tag {badge_class}">{ext.replace('.', '').upper() or 'DOC'}</span>
-                <span title="{d}">{d}</span>
+        <div class="chat-item">
+            <div class="avatar">{badge_text}</div>
+            <div class="chat-item-text">
+                <p class="sender" title="{d}">{d}</p>
+                <p class="preview">{chunks_info} • Ready</p>
             </div>
-            {chunks_badge}
         </div>
         """)
     
@@ -54,19 +57,19 @@ def format_chunk_analytics_html(analytics: dict) -> str:
     
     return f"""
     <div class="stats-grid">
-        <div class="stat-card stat-card-blue">
+        <div class="stat-card">
             <div class="stat-value">{total_docs}</div>
             <div class="stat-label">Total Docs</div>
         </div>
-        <div class="stat-card stat-card-purple">
+        <div class="stat-card">
             <div class="stat-value">{parent_chunks}</div>
             <div class="stat-label">Parents</div>
         </div>
-        <div class="stat-card stat-card-emerald">
+        <div class="stat-card">
             <div class="stat-value">{child_chunks}</div>
             <div class="stat-label">Children</div>
         </div>
-        <div class="stat-card stat-card-amber">
+        <div class="stat-card">
             <div class="stat-value">{avg_child}</div>
             <div class="stat-label">Avg / Doc</div>
         </div>
@@ -74,28 +77,28 @@ def format_chunk_analytics_html(analytics: dict) -> str:
 
     <div class="strategy-box">
         <div class="strategy-row">
-            <span class="strategy-label">⚡ Strategy</span>
+            <span class="strategy-label">Strategy</span>
             <div class="strategy-content">
                 <span class="badge-tag badge-chunks">{analytics.get('strategy', 'Hierarchical Parent-Child')}</span>
             </div>
         </div>
         <div class="strategy-row" style="margin-top: 4px;">
-            <span class="strategy-label">🧱 Parent Chunker</span>
+            <span class="strategy-label">Parent Chunker</span>
             <div class="strategy-content">
                 {analytics.get('parent_type', 'Markdown Header Splitter')}
             </div>
         </div>
         <div class="strategy-row" style="margin-top: 4px;">
-            <span class="strategy-label">🎯 Child Chunker</span>
+            <span class="strategy-label">Child Chunker</span>
             <div class="strategy-content">
                 {analytics.get('child_type', 'Recursive Character Splitter')}
             </div>
         </div>
         <div class="strategy-row" style="margin-top: 4px;">
-            <span class="strategy-label">🧬 Embeddings</span>
-            <div class="strategy-content" style="font-family: 'JetBrains Mono', monospace; font-size: 0.70rem;">
-                Dense: <span style="color: #38bdf8;">{analytics.get('dense_model', '')}</span><br>
-                Sparse: <span style="color: #c084fc;">{analytics.get('sparse_model', '')}</span>
+            <span class="strategy-label">Embeddings</span>
+            <div class="strategy-content" style="font-family: -apple-system, monospace; font-size: 0.70rem;">
+                Dense: <span style="color: #4C426D; font-weight: 600;">{analytics.get('dense_model', '')}</span><br>
+                Sparse: <span style="color: #64748b;">{analytics.get('sparse_model', '')}</span>
             </div>
         </div>
     </div>
@@ -112,21 +115,23 @@ def create_gradio_ui():
     initial_analytics = doc_manager.get_chunk_analytics()
 
     theme = gr.themes.Soft(
-        primary_hue="indigo",
+        primary_hue="purple",
         secondary_hue="slate",
         neutral_hue="slate",
     ).set(
-        body_background_fill="#080c16",
-        body_background_fill_dark="#080c16",
-        block_background_fill="#0b101d",
-        block_background_fill_dark="#0b101d",
-        block_border_width="0px",
-        button_primary_background_fill="linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+        body_background_fill="#ffffff",
+        body_background_fill_dark="#ffffff",
+        block_background_fill="#ffffff",
+        block_background_fill_dark="#ffffff",
+        block_border_width="1px",
+        block_border_color="#edf2f7",
+        button_primary_background_fill="#4C426D",
+        button_primary_background_fill_hover="#3b3256",
         button_primary_text_color="#ffffff",
-        button_secondary_background_fill="rgba(255, 255, 255, 0.05)",
-        button_secondary_text_color="#e2e8f0",
-        input_background_fill="#10172a",
-        input_background_fill_dark="#10172a",
+        button_secondary_background_fill="#F6F7FB",
+        button_secondary_text_color="#1e293b",
+        input_background_fill="#ffffff",
+        input_background_fill_dark="#ffffff",
     )
 
     with gr.Blocks(title="Srini RAG Harness Learning", fill_width=True, fill_height=True, theme=theme) as demo:
@@ -218,10 +223,10 @@ def create_gradio_ui():
                 
                 gr.HTML("""
                 <div class="chat-column-header">
-                    <span style="font-weight: 700; font-size: 0.88rem; color: #ffffff; display: flex; align-items: center; gap: 6px;">
-                        💬 Conversation & Agent Reasoning
+                    <span style="font-weight: 700; font-size: 0.88rem; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                        Conversation & Agent Reasoning
                     </span>
-                    <span style="font-size: 0.72rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.15); padding: 2px 8px; border-radius: 4px;">
+                    <span style="font-size: 0.72rem; color: #4C426D; background: rgba(76, 66, 109, 0.08); padding: 2px 8px; border-radius: 4px; font-weight: 600;">
                         Hybrid Qdrant + BM25
                     </span>
                 </div>
@@ -261,9 +266,11 @@ def create_gradio_ui():
                 gr.HTML(
                     f"""
                     <div class="inspector-profile">
-                        <div class="inspector-avatar">🤖</div>
-                        <h4 class="inspector-name">Agent Diagnostics</h4>
-                        <div class="inspector-desc">{provider} / {model_name}</div>
+                        <div class="info-avatar">🤖</div>
+                        <p class="info-name">Srini RAG Agent</p>
+                        <p class="info-description">
+                            Hierarchical hybrid retrieval agent with LangGraph pipeline orchestration, Qdrant vector memory, and {provider}:{model_name} reasoning.
+                        </p>
                     </div>
                     """
                 )
