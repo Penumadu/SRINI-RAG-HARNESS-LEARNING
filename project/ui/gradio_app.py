@@ -17,10 +17,10 @@ def format_doc_list_html(analytics: dict) -> str:
     source_counts = analytics.get("source_counts", {})
     if not docs:
         return """
-        <div class="chat-item" style="justify-content: center; text-align: center; color: #94a3b8; padding: 24px 8px;">
+        <div class="chat-item" style="justify-content: center; text-align: center; color: var(--ink-muted); padding: 18px 8px;">
             <div>
-                <p class="sender" style="color: #64748b; font-size: 0.82rem;">No documents uploaded</p>
-                <p class="preview" style="font-size: 0.72rem;">Drop PDF or Markdown above</p>
+                <p class="sender" style="color: var(--ink-secondary); font-size: 0.78rem;">No documents uploaded</p>
+                <p class="preview" style="font-size: 0.68rem;">Drop PDF or Markdown files above</p>
             </div>
         </div>
         """
@@ -29,12 +29,13 @@ def format_doc_list_html(analytics: dict) -> str:
     for d in docs:
         ext = Path(d).suffix.lower()
         count = source_counts.get(d, 0)
-        chunks_info = f"{count} parent chunks" if count else "Indexed"
+        chunks_info = f"{count} parents" if count else "Indexed"
+        badge_cls = "pdf" if "pdf" in ext else ("md" if "md" in ext else "")
         badge_text = ext.replace('.', '').upper()[:3] or "DOC"
         
         rows.append(f"""
         <div class="chat-item">
-            <div class="avatar">{badge_text}</div>
+            <div class="avatar {badge_cls}">{badge_text}</div>
             <div class="chat-item-text">
                 <p class="sender" title="{d}">{d}</p>
                 <p class="preview">{chunks_info} • Ready</p>
@@ -59,7 +60,7 @@ def format_chunk_analytics_html(analytics: dict) -> str:
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-value">{total_docs}</div>
-            <div class="stat-label">Total Docs</div>
+            <div class="stat-label">Total docs</div>
         </div>
         <div class="stat-card">
             <div class="stat-value">{parent_chunks}</div>
@@ -71,34 +72,34 @@ def format_chunk_analytics_html(analytics: dict) -> str:
         </div>
         <div class="stat-card">
             <div class="stat-value">{avg_child}</div>
-            <div class="stat-label">Avg / Doc</div>
+            <div class="stat-label">Avg / doc</div>
         </div>
     </div>
 
     <div class="strategy-box">
         <div class="strategy-row">
-            <span class="strategy-label">Strategy</span>
+            <span class="strategy-label">Chunk strategy</span>
             <div class="strategy-content">
                 <span class="badge-tag badge-chunks">{analytics.get('strategy', 'Hierarchical Parent-Child')}</span>
             </div>
         </div>
         <div class="strategy-row" style="margin-top: 4px;">
-            <span class="strategy-label">Parent Chunker</span>
+            <span class="strategy-label">Parent chunker</span>
             <div class="strategy-content">
                 {analytics.get('parent_type', 'Markdown Header Splitter')}
             </div>
         </div>
         <div class="strategy-row" style="margin-top: 4px;">
-            <span class="strategy-label">Child Chunker</span>
+            <span class="strategy-label">Child chunker</span>
             <div class="strategy-content">
                 {analytics.get('child_type', 'Recursive Character Splitter')}
             </div>
         </div>
         <div class="strategy-row" style="margin-top: 4px;">
-            <span class="strategy-label">Embeddings</span>
-            <div class="strategy-content" style="font-family: -apple-system, monospace; font-size: 0.70rem;">
-                Dense: <span style="color: #4C426D; font-weight: 600;">{analytics.get('dense_model', '')}</span><br>
-                Sparse: <span style="color: #64748b;">{analytics.get('sparse_model', '')}</span>
+            <span class="strategy-label">Embedding models</span>
+            <div class="strategy-content" style="font-family: var(--font-mono); font-size: 0.68rem;">
+                Dense: <span style="color: var(--brand-primary); font-weight: 600;">{analytics.get('dense_model', '')}</span><br>
+                Sparse: <span style="color: var(--ink-muted);">{analytics.get('sparse_model', '')}</span>
             </div>
         </div>
     </div>
@@ -229,29 +230,29 @@ def create_gradio_ui():
     initial_analytics = doc_manager.get_chunk_analytics()
 
     theme = gr.themes.Soft(
-        primary_hue="purple",
+        primary_hue="indigo",
         secondary_hue="slate",
         neutral_hue="slate",
     ).set(
-        body_background_fill="#ffffff",
-        body_background_fill_dark="#ffffff",
-        block_background_fill="#ffffff",
-        block_background_fill_dark="#ffffff",
+        body_background_fill="#F8FAFC",
+        body_background_fill_dark="#F8FAFC",
+        block_background_fill="#FFFFFF",
+        block_background_fill_dark="#FFFFFF",
         block_border_width="1px",
-        block_border_color="#edf2f7",
-        button_primary_background_fill="#4C426D",
-        button_primary_background_fill_hover="#3b3256",
-        button_primary_text_color="#ffffff",
-        button_secondary_background_fill="#F6F7FB",
-        button_secondary_text_color="#1e293b",
-        input_background_fill="#ffffff",
-        input_background_fill_dark="#ffffff",
+        block_border_color="#E2E8F0",
+        button_primary_background_fill="#4F46E5",
+        button_primary_background_fill_hover="#4338CA",
+        button_primary_text_color="#FFFFFF",
+        button_secondary_background_fill="#FFFFFF",
+        button_secondary_text_color="#0F172A",
+        input_background_fill="#FFFFFF",
+        input_background_fill_dark="#FFFFFF",
     )
 
     with gr.Blocks(title="Srini RAG Harness Learning", fill_width=True, fill_height=True) as demo:
 
         # =====================================================================
-        # TOP APP HEADER BAR (Fixed 48px height, Clean Single Row)
+        # TOP APP HEADER BAR (Fixed 46px height, Precision Instrument Header)
         # =====================================================================
         with gr.Row(elem_id="app-header"):
             provider = getattr(config, 'LLM_PROVIDER', 'ollama')
@@ -261,8 +262,11 @@ def create_gradio_ui():
             gr.HTML(
                 """
                 <div class="app-brand">
-                    <span class="app-brand-badge">PROD</span>
-                    <h1 class="app-brand-title">⚡ Srini RAG Harness</h1>
+                    <span class="app-brand-logo">⚡</span>
+                    <div class="app-brand-text">
+                        <span class="app-brand-title">Srini RAG Harness</span>
+                        <span class="app-brand-version">v2.4 • Agentic Workbench</span>
+                    </div>
                 </div>
                 """
             )
@@ -271,32 +275,32 @@ def create_gradio_ui():
                 f"""
                 <div class="app-status-bar">
                     <span class="status-pill pill-green">
-                        <span class="status-dot" style="background: #10b981;"></span> Qdrant
+                        <span class="status-dot pulse" style="background: #059669;"></span> Qdrant Live
                     </span>
                     <span class="status-pill pill-purple">
-                        <span class="status-dot" style="background: #4C426D;"></span> {provider}:{model_name}
+                        {provider}:{model_name}
                     </span>
                     <span class="status-pill {'pill-blue' if langfuse_on else ''}">
-                        <span class="status-dot" style="background: {'#3b82f6' if langfuse_on else '#94a3b8'};"></span>
-                        {'Langfuse' if langfuse_on else 'No Tracing'}
+                        <span class="status-dot" style="background: {'#2563EB' if langfuse_on else '#94a3b8'};"></span>
+                        {'Langfuse Active' if langfuse_on else 'No Tracing'}
                     </span>
                 </div>
                 """
             )
 
         # =====================================================================
-        # MAIN 3-COLUMN SEAMLESS CONTAINER (height: calc(100vh - 48px))
+        # MAIN 3-COLUMN SEAMLESS CONTAINER (height: calc(100vh - 46px))
         # =====================================================================
         with gr.Row(elem_id="app-3-columns", equal_height=True):
             
             # -----------------------------------------------------------------
-            # COLUMN 1: LEFT SIDEBAR (DOCUMENTS & CHUNKS)
+            # COLUMN 1: LEFT SIDEBAR (KNOWLEDGE BASE & CHUNKING)
             # -----------------------------------------------------------------
-            with gr.Column(scale=3, min_width=200, elem_id="col-sidebar"):
+            with gr.Column(scale=3, min_width=180, elem_id="col-sidebar"):
                 
-                # Column Width Slider for Left Sidebar
+                # Low-profile Column Width Slider
                 with gr.Group(elem_id="sidebar-width-control"):
-                    gr.HTML('<div class="col-slider-label"><span>📐 Left Column Size</span><span id="left-col-val" class="col-slider-val">290px</span></div>')
+                    gr.HTML('<div class="col-slider-label"><span>Column width</span><span id="left-col-val" class="col-slider-val">290px</span></div>')
                     left_slider = gr.Slider(
                         minimum=180,
                         maximum=520,
@@ -307,29 +311,29 @@ def create_gradio_ui():
                         elem_id="slider-left"
                     )
 
-                # 1. Upload Feature
+                # 1. Ingest Documents
                 with gr.Group():
                     gr.HTML("""
                     <div class="sidebar-section-title">
-                        <span>📥 Ingest Documents</span>
-                        <span style="font-size: 0.68rem; color: #64748b;">PDF / MD</span>
+                        <span>📥 Ingest documents</span>
+                        <span class="sidebar-badge">PDF / MD</span>
                     </div>
                     """)
                     files_input = gr.File(
                         label="Drop PDF or Markdown files",
                         file_count="multiple",
                         type="filepath",
-                        height=90,
+                        height=76,
                         show_label=False
                     )
                     upload_btn = gr.Button("⚡ Ingest & Process Chunks", variant="primary", size="sm")
 
-                # 2. Uploaded Documents List
+                # 2. Indexed Documents List
                 with gr.Group():
                     gr.HTML("""
-                    <div class="sidebar-section-title" style="margin-top: 10px;">
-                        <span>📚 Knowledge Base Docs</span>
-                        <span style="color: #34d399; font-size: 0.68rem;">Live</span>
+                    <div class="sidebar-section-title" style="margin-top: 8px;">
+                        <span>📚 Indexed documents</span>
+                        <span class="sidebar-badge live">Live</span>
                     </div>
                     """)
                     doc_list_display = gr.HTML(value=format_doc_list_html(initial_analytics))
@@ -341,9 +345,9 @@ def create_gradio_ui():
                 # 3. Chunking Strategy & Processed Count
                 with gr.Group():
                     gr.HTML("""
-                    <div class="sidebar-section-title" style="margin-top: 10px;">
-                        <span>🧩 Chunk Strategy & Stats</span>
-                        <span style="color: #60a5fa; font-size: 0.68rem;">Hierarchy</span>
+                    <div class="sidebar-section-title" style="margin-top: 8px;">
+                        <span>🧩 Chunk strategy & metrics</span>
+                        <span class="sidebar-badge">Hierarchy</span>
                     </div>
                     """)
                     chunk_analytics_display = gr.HTML(value=format_chunk_analytics_html(initial_analytics))
@@ -351,32 +355,38 @@ def create_gradio_ui():
             # -----------------------------------------------------------------
             # COLUMN 2: MIDDLE MAIN CHAT & RETRIEVED SEARCH RESULTS
             # -----------------------------------------------------------------
-            with gr.Column(scale=6, min_width=460, elem_id="col-chat"):
+            with gr.Column(scale=6, min_width=440, elem_id="col-chat"):
                 
                 gr.HTML("""
                 <div class="chat-column-header">
-                    <span style="font-weight: 700; font-size: 0.88rem; color: #1e293b; display: flex; align-items: center; gap: 6px;">
-                        Conversation & Agent Reasoning
+                    <span style="font-weight: 700; font-size: 0.84rem; color: var(--ink-primary); display: flex; align-items: center; gap: 6px;">
+                        Conversation & agent reasoning
                     </span>
-                    <span style="font-size: 0.72rem; color: #4C426D; background: rgba(76, 66, 109, 0.08); padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+                    <span style="font-size: 0.70rem; color: var(--brand-primary); background: var(--brand-light); border: 1px solid var(--brand-border); padding: 2px 7px; border-radius: 4px; font-weight: 600; font-family: var(--font-mono);">
                         Hybrid Qdrant + BM25
                     </span>
                 </div>
                 """)
                 
                 chatbot = gr.Chatbot(
-                    placeholder="<strong>Ask anything about your ingested documents!</strong><br><span style='color: #64748b;'>The agent will analyze the query, execute hybrid retrieval, and synthesize an answer.</span>",
+                    placeholder="<strong>Ask anything about your ingested documents!</strong><br><span style='color: var(--ink-muted);'>The agent analyzes queries, executes hybrid retrieval across hierarchical parent/child chunks, and synthesizes answers.</span>",
                     show_label=False,
                     avatar_images=(None, BOT_AVATAR),
                     layout="bubble",
                 )
 
                 # Search Results Drawer directly in the middle column
-                with gr.Accordion("🔍 Retrieved Search Results & Excerpts", open=False, elem_id="search-accordion"):
+                with gr.Accordion("🔍 Retrieved search excerpts", open=False, elem_id="search-accordion"):
                     search_results_display = gr.HTML(
                         value=chat_interface.get_search_results_markdown(),
                         elem_id="search-results-panel"
                     )
+
+                # Quick Starter Prompts Row
+                with gr.Row(elem_id="quick-prompts-row"):
+                    quick_1 = gr.Button("💡 What are the key concepts in 137notes?", variant="secondary", size="sm", elem_classes=["quick-prompt-btn"])
+                    quick_2 = gr.Button("⚡ Compare notes 217a & 217c", variant="secondary", size="sm", elem_classes=["quick-prompt-btn"])
+                    quick_3 = gr.Button("🔬 Explain retrieval & chunk hierarchy", variant="secondary", size="sm", elem_classes=["quick-prompt-btn"])
 
                 with gr.Row(elem_id="chat-input-row"):
                     msg_input = gr.Textbox(
@@ -387,13 +397,13 @@ def create_gradio_ui():
                         container=False,
                         autofocus=False
                     )
-                    send_btn = gr.Button("Send", variant="primary", scale=2, min_width=75)
+                    send_btn = gr.Button("Send ↵", variant="primary", scale=2, min_width=75)
                     clear_chat_btn = gr.Button("🧹 Clear", variant="secondary", scale=1, min_width=65)
 
             # -----------------------------------------------------------------
-            # COLUMN 3: RIGHT INSPECTOR PANEL (Compact Header with Tabs at Top)
+            # COLUMN 3: RIGHT INSPECTOR PANEL (AGENT TRACES & STATE)
             # -----------------------------------------------------------------
-            with gr.Column(scale=3, min_width=260, elem_id="col-inspector"):
+            with gr.Column(scale=3, min_width=240, elem_id="col-inspector"):
                 
                 gr.HTML(
                     f"""
@@ -407,9 +417,9 @@ def create_gradio_ui():
                     """
                 )
 
-                # Column Width Slider for Right Inspector
+                # Low-profile Column Width Slider
                 with gr.Group(elem_id="inspector-width-control"):
-                    gr.HTML('<div class="col-slider-label"><span>📐 Right Column Size</span><span id="right-col-val" class="col-slider-val">320px</span></div>')
+                    gr.HTML('<div class="col-slider-label"><span>Column width</span><span id="right-col-val" class="col-slider-val">320px</span></div>')
                     right_slider = gr.Slider(
                         minimum=220,
                         maximum=580,
@@ -421,12 +431,12 @@ def create_gradio_ui():
                     )
                 
                 with gr.Tabs(elem_id="observability-tabs"):
-                    with gr.Tab("📡 Agent Traces"):
+                    with gr.Tab("📡 Agent traces"):
                         observability_display = gr.HTML(
                             value=chat_interface.get_observability_markdown(),
                             elem_id="observability-panel"
                         )
-                    with gr.Tab("🧠 Memory & State"):
+                    with gr.Tab("🧠 Memory & state"):
                         memory_display = gr.HTML(
                             value=chat_interface.get_memory_markdown(),
                             elem_id="memory-panel"
@@ -560,6 +570,11 @@ def create_gradio_ui():
             inputs=None,
             outputs=[chatbot, search_results_display, observability_display, memory_display]
         )
+
+        # Quick Starter Prompt Buttons
+        quick_1.click(lambda: "What are the key concepts in 137notes?", outputs=[msg_input])
+        quick_2.click(lambda: "Compare notes 217a and 217c", outputs=[msg_input])
+        quick_3.click(lambda: "Explain the hierarchical retrieval pipeline and chunking strategy", outputs=[msg_input])
         
         # Connect Observability buttons
         refresh_obs_btn.click(

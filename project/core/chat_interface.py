@@ -187,34 +187,34 @@ class ChatInterface:
         """Render the latest search results and query rewrites in clean rich cards."""
         if not self.last_query:
             return """
-            <div style="padding: 24px; text-align: center; color: #64748b; font-size: 0.85rem;">
-                <div style="font-size: 1.5rem; margin-bottom: 6px;">🔍</div>
-                <strong style="color: #94a3b8;">No Search Queries Yet</strong><br>
+            <div style="padding: 20px; text-align: center; color: var(--ink-muted); font-size: 0.82rem;">
+                <div style="font-size: 1.3rem; margin-bottom: 4px;">🔍</div>
+                <strong style="color: var(--ink-secondary);">No search queries yet</strong><br>
                 Ask a question in the chat to see real-time hybrid retrieval (Qdrant + BM25) and extracted excerpts here.
             </div>
             """
 
         html_blocks = [
             f"""
-            <div style="margin-bottom: 10px; padding: 8px 12px; background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px;">
-                <div style="font-size: 0.70rem; font-weight: 700; color: #4C426D; text-transform: uppercase;">Active Search Query</div>
-                <div style="font-size: 0.86rem; font-weight: 600; color: #1e293b; margin-top: 2px;">{self.last_query}</div>
+            <div style="margin-bottom: 8px; padding: 6px 10px; background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 6px;">
+                <div style="font-size: 0.66rem; font-weight: 600; color: var(--ink-muted);">Active search query</div>
+                <div style="font-size: 0.82rem; font-weight: 600; color: var(--ink-primary); margin-top: 1px;">{self.last_query}</div>
             </div>
             """
         ]
 
         if self.rewritten_questions:
-            questions_html = "".join([f'<li style="margin-bottom: 2px; color: #334155;"><code style="background: #F6F7FB; padding: 2px 5px; border-radius: 4px; font-size: 0.75rem;">{q}</code></li>' for q in self.rewritten_questions])
+            questions_html = "".join([f'<li style="margin-bottom: 2px; color: var(--ink-secondary);"><code style="background: var(--surface-subtle); padding: 2px 6px; border-radius: 4px; font-size: 0.72rem; font-family: var(--font-mono);">{q}</code></li>' for q in self.rewritten_questions])
             html_blocks.append(f"""
-            <div style="margin-bottom: 10px;">
-                <div style="font-size: 0.72rem; font-weight: 700; color: #4C426D; text-transform: uppercase; margin-bottom: 4px;">🔄 Rewritten Sub-Queries</div>
-                <ul style="margin: 0; padding-left: 18px; font-size: 0.78rem;">{questions_html}</ul>
+            <div style="margin-bottom: 8px;">
+                <div style="font-size: 0.68rem; font-weight: 600; color: var(--brand-primary); margin-bottom: 3px;">Rewritten sub-queries</div>
+                <ul style="margin: 0; padding-left: 16px; font-size: 0.74rem;">{questions_html}</ul>
             </div>
             """)
 
         if not self.search_results:
             html_blocks.append("""
-            <div style="padding: 10px; background: #F6F7FB; border: 1px dashed #cbd5e1; border-radius: 6px; color: #64748b; font-size: 0.78rem;">
+            <div style="padding: 8px; background: var(--surface-subtle); border: 1px dashed var(--border-subtle); border-radius: 6px; color: var(--ink-muted); font-size: 0.74rem;">
                 ℹ️ No child chunks retrieved for this turn. The agent answered directly from context or conversation history.
             </div>
             """)
@@ -225,8 +225,8 @@ class ChatInterface:
                 cards.append(f"""
                 <div class="search-chunk-card">
                     <div class="search-chunk-header">
-                        <span style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
-                            <span style="color: #4C426D;">#{i}</span> 📄 {r['file_name']}
+                        <span style="font-weight: 600; color: var(--ink-primary); display: flex; align-items: center; gap: 6px;">
+                            <span style="color: var(--brand-primary); font-family: var(--font-mono);">#{i}</span> 📄 {r['file_name']}
                         </span>
                         {parent_badge}
                     </div>
@@ -256,7 +256,7 @@ class ChatInterface:
         for num, node_name, desc in pipeline_nodes:
             is_active = (node_name == active) or (node_name in active)
             active_class = "active" if is_active else ""
-            dot_color = "#10b981" if is_active else ("#4C426D" if status == "Completed" else "#cbd5e1")
+            dot_color = "var(--status-live)" if is_active else ("var(--brand-primary)" if status == "Completed" else "var(--border-focus)")
             stepper_items.append(f"""
             <div class="stepper-item {active_class}">
                 <div class="stepper-num">{num}</div>
@@ -274,7 +274,7 @@ class ChatInterface:
         if not self.events_log:
             event_rows.append("""
             <tr>
-                <td colspan="4" style="text-align: center; color: #94a3b8; padding: 12px;">
+                <td colspan="4" style="text-align: center; color: var(--ink-muted); padding: 10px;">
                     No execution events recorded yet. Send a query to observe live agent calls.
                 </td>
             </tr>
@@ -283,10 +283,10 @@ class ChatInterface:
             for ev in reversed(self.events_log[-10:]):
                 event_rows.append(f"""
                 <tr>
-                    <td style="font-family: monospace; color: #4C426D; font-weight: 600;">{ev['time']}</td>
-                    <td style="font-family: monospace; font-weight: 600; color: #1e293b;">{ev['node']}</td>
-                    <td><strong style="color: #334155;">{ev['type']}</strong></td>
-                    <td style="color: #64748b;">{ev['detail']}</td>
+                    <td style="font-family: var(--font-mono); color: var(--brand-primary); font-weight: 600;">{ev['time']}</td>
+                    <td style="font-family: var(--font-mono); font-weight: 600; color: var(--ink-primary);">{ev['node']}</td>
+                    <td><strong style="color: var(--ink-secondary);">{ev['type']}</strong></td>
+                    <td style="color: var(--ink-muted);">{ev['detail']}</td>
                 </tr>
                 """)
 
@@ -294,26 +294,26 @@ class ChatInterface:
         <div class="obs-stat-row">
             <div class="obs-stat-card">
                 <div class="obs-stat-label">Status</div>
-                <div class="obs-stat-val" style="color: {'#10b981' if status in ('Ready', 'Completed') else '#4C426D'};">{status}</div>
+                <div class="obs-stat-val" style="color: {'var(--status-live)' if status in ('Ready', 'Completed') else 'var(--brand-primary)'};">{status}</div>
             </div>
             <div class="obs-stat-card">
                 <div class="obs-stat-label">Active Node</div>
-                <div class="obs-stat-val" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{active}</div>
+                <div class="obs-stat-val" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: 0.74rem;">{active}</div>
             </div>
             <div class="obs-stat-card">
                 <div class="obs-stat-label">Tools Invoked</div>
-                <div class="obs-stat-val">{tool_count}</div>
+                <div class="obs-stat-val" style="font-family: var(--font-mono);">{tool_count}</div>
             </div>
         </div>
 
-        <div style="font-size: 0.72rem; font-weight: 700; color: #4C426D; text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 5px 0;">
+        <div style="font-size: 0.70rem; font-weight: 700; color: var(--ink-primary); margin: 8px 0 4px 0; letter-spacing: -0.01em;">
             State Machine Pipeline
         </div>
         <div class="stepper-list">
             {''.join(stepper_items)}
         </div>
 
-        <div style="font-size: 0.72rem; font-weight: 700; color: #4C426D; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 5px 0;">
+        <div style="font-size: 0.70rem; font-weight: 700; color: var(--ink-primary); margin: 10px 0 4px 0; letter-spacing: -0.01em;">
             Execution Event Log (Latest First)
         </div>
         <table>
@@ -339,32 +339,32 @@ class ChatInterface:
         
         import config
         return f"""
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
-                <div style="font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Session Thread ID</div>
-                <div style="font-family: monospace; font-size: 0.76rem; color: #4C426D; font-weight: 600; word-break: break-all; margin-top: 2px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px;">
+                <div style="font-size: 0.65rem; font-weight: 600; color: var(--ink-muted);">Session Thread ID</div>
+                <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--brand-primary); font-weight: 600; word-break: break-all; margin-top: 1px;">
                     {tid}
                 </div>
             </div>
 
-            <div style="background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
-                <div style="font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Dialogue State</div>
-                <div style="font-size: 0.80rem; font-weight: 600; color: {'#b45309' if self.session_metrics.get('clarification_needed') else '#059669'}; margin-top: 2px;">
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px;">
+                <div style="font-size: 0.65rem; font-weight: 600; color: var(--ink-muted);">Dialogue State</div>
+                <div style="font-size: 0.76rem; font-weight: 600; color: {'var(--amber)' if self.session_metrics.get('clarification_needed') else 'var(--status-live)'}; margin-top: 1px;">
                     {clarification}
                 </div>
             </div>
 
-            <div style="background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
-                <div style="font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Active LLM Runtime</div>
-                <div style="font-size: 0.78rem; color: #334155; margin-top: 2px;">
-                    Provider: <strong style="color: #4C426D;">{getattr(config, 'LLM_PROVIDER', 'ollama')}</strong> | 
-                    Model: <strong style="color: #4C426D;">{getattr(config, 'LLM_MODEL', 'qwen3.5:9b')}</strong>
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px;">
+                <div style="font-size: 0.65rem; font-weight: 600; color: var(--ink-muted);">Active LLM Runtime</div>
+                <div style="font-size: 0.74rem; color: var(--ink-secondary); margin-top: 1px; font-family: var(--font-mono);">
+                    Provider: <strong style="color: var(--brand-primary);">{getattr(config, 'LLM_PROVIDER', 'ollama')}</strong> | 
+                    Model: <strong style="color: var(--brand-primary);">{getattr(config, 'LLM_MODEL', 'qwen3.5:9b')}</strong>
                 </div>
             </div>
 
-            <div style="background: #F6F7FB; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
-                <div style="font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">Working Memory Summary</div>
-                <div style="font-size: 0.76rem; color: #334155; line-height: 1.5; background: #ffffff; border: 1px solid #e2e8f0; border-left: 3px solid #4C426D; padding: 8px 10px; border-radius: 4px;">
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px;">
+                <div style="font-size: 0.65rem; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Working Memory Summary</div>
+                <div style="font-size: 0.74rem; color: var(--ink-secondary); line-height: 1.5; background: #ffffff; border: 1px solid var(--border-subtle); border-left: 3px solid var(--brand-primary); padding: 6px 8px; border-radius: 4px;">
                     {summary}
                 </div>
             </div>
