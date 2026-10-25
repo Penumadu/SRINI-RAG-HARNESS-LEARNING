@@ -339,32 +339,32 @@ class ChatInterface:
         
         import config
         return f"""
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-            <div style="background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+            <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 7px; padding: 9px 10px;">
                 <div style="font-size: 0.65rem; font-weight: 600; color: var(--ink-muted);">Session Thread ID</div>
-                <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--brand-primary); font-weight: 600; word-break: break-all; margin-top: 1px;">
+                <div style="font-family: var(--font-mono); font-size: 0.72rem; color: #4F46E5; font-weight: 600; word-break: break-all; margin-top: 2px;">
                     {tid}
                 </div>
             </div>
 
-            <div style="background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px;">
+            <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 7px; padding: 9px 10px;">
                 <div style="font-size: 0.65rem; font-weight: 600; color: var(--ink-muted);">Dialogue State</div>
-                <div style="font-size: 0.76rem; font-weight: 600; color: {'var(--amber)' if self.session_metrics.get('clarification_needed') else 'var(--status-live)'}; margin-top: 1px;">
+                <div style="font-size: 0.76rem; font-weight: 600; color: {'var(--status-amber)' if self.session_metrics.get('clarification_needed') else 'var(--status-live)'}; margin-top: 2px;">
                     {clarification}
                 </div>
             </div>
 
-            <div style="background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px;">
+            <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 7px; padding: 9px 10px;">
                 <div style="font-size: 0.65rem; font-weight: 600; color: var(--ink-muted);">Active LLM Runtime</div>
-                <div style="font-size: 0.74rem; color: var(--ink-secondary); margin-top: 1px; font-family: var(--font-mono);">
-                    Provider: <strong style="color: var(--brand-primary);">{getattr(config, 'LLM_PROVIDER', 'ollama')}</strong> | 
-                    Model: <strong style="color: var(--brand-primary);">{getattr(config, 'LLM_MODEL', 'qwen3.5:9b')}</strong>
+                <div style="font-size: 0.74rem; color: var(--ink-secondary); margin-top: 2px; font-family: var(--font-mono);">
+                    Provider: <strong style="color: #4F46E5;">{getattr(config, 'LLM_PROVIDER', 'ollama')}</strong> | 
+                    Model: <strong style="color: #4F46E5;">{getattr(config, 'LLM_MODEL', 'qwen3.5:9b')}</strong>
                 </div>
             </div>
 
-            <div style="background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px;">
-                <div style="font-size: 0.65rem; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Working Memory Summary</div>
-                <div style="font-size: 0.74rem; color: var(--ink-secondary); line-height: 1.5; background: #ffffff; border: 1px solid var(--border-subtle); border-left: 3px solid var(--brand-primary); padding: 6px 8px; border-radius: 4px;">
+            <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 7px; padding: 9px 10px;">
+                <div style="font-size: 0.65rem; font-weight: 600; color: var(--ink-muted); margin-bottom: 5px;">Working Memory Summary</div>
+                <div style="font-size: 0.74rem; color: var(--ink-secondary); line-height: 1.5; background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-left: 3px solid var(--brand-primary); padding: 7px 10px; border-radius: 5px;">
                     {summary}
                 </div>
             </div>
