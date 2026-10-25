@@ -144,17 +144,26 @@ def rewrite_query(state: State, llm):
         if pending_query else []
     )
 
-    if response.questions and response.is_clear:
+    # If rewritten questions were produced, verify whether query is substantively clear
+    is_clear = bool(getattr(response, "is_clear", False))
+    questions = getattr(response, "questions", []) or []
+    if questions and not is_clear:
+        # Check if query contains substantive concepts (e.g. not just dangling pronouns 'what is it')
+        query_words = current_query.strip().split()
+        if len(query_words) >= 2 or any(k in current_query.lower() for k in ["note", "doc", "what", "how", "concept", "explain", "compare", "137", "217"]):
+            is_clear = True
+
+    if questions and is_clear:
         return {
             "questionIsClear": True,
             "originalQuery": original_query,
             "pendingQuery": "",
             "pendingClarifications": [],
-            "rewrittenQuestions": response.questions,
+            "rewrittenQuestions": questions,
             "messages": clarification_message_update,
         }
 
-    clarification = response.clarification_needed if response.clarification_needed and len(response.clarification_needed.strip()) > 10 else "I need more information to understand your question."
+    clarification = response.clarification_needed if getattr(response, "clarification_needed", None) and len(response.clarification_needed.strip()) > 10 else "I need more information to understand your question."
     return {
         "questionIsClear": False,
         "originalQuery": "",

@@ -152,8 +152,8 @@ def format_chunk_analytics_html(analytics: dict) -> str:
 
 
 SPLITTER_JS = """
-() => {
-    function setupSplitters() {
+function setupSplitters() {
+    try {
         // Ensure light mode on HTML root & body for Gradio
         document.documentElement.classList.remove('dark');
         document.body.classList.remove('dark');
@@ -164,7 +164,7 @@ SPLITTER_JS = """
         const midCol = document.getElementById('col-chat');
         const rightCol = document.getElementById('col-inspector');
         if (!leftCol || !midCol || !rightCol) {
-            setTimeout(setupSplitters, 200);
+            setTimeout(setupSplitters, 250);
             return;
         }
 
@@ -265,9 +265,13 @@ SPLITTER_JS = """
                 }
             });
         }
+    } catch (err) {
+        console.error('Splitter setup error:', err);
     }
-    setupSplitters();
-};
+}
+setupSplitters();
+setTimeout(setupSplitters, 400);
+setTimeout(setupSplitters, 1200);
 """
 
 
@@ -441,6 +445,9 @@ def create_gradio_ui():
                     show_label=False,
                     avatar_images=(None, BOT_AVATAR),
                     layout="bubble",
+                    scale=1,
+                    min_height=260,
+                    elem_id="rag-chatbot",
                 )
 
                 # Search Results Drawer directly in the middle column
@@ -567,20 +574,21 @@ def create_gradio_ui():
             if not msg_str:
                 yield (
                     "",
-                    history,
+                    history or [],
                     chat_interface.get_search_results_markdown(),
                     chat_interface.get_observability_markdown(),
                     chat_interface.get_memory_markdown(),
                 )
                 return
 
+            safe_history = list(history) if history else []
             user_msg = {"role": "user", "content": msg_str}
-            current_history = history + [user_msg]
+            current_history = safe_history + [user_msg]
             
             yield (
                 "",
                 current_history,
-                '<div style="padding: 12px; text-align: center; color: #a5b4fc; font-size: 0.82rem; background: rgba(99, 102, 241, 0.08); border-radius: 6px;">⏳ <em>Agent analyzing query and executing hybrid retrieval...</em></div>',
+                '<div style="padding: 12px; text-align: center; color: #4F46E5; font-size: 0.82rem; background: rgba(79, 70, 229, 0.08); border-radius: 6px;">⏳ <em>Agent analyzing query and executing hybrid retrieval...</em></div>',
                 chat_interface.get_observability_markdown(),
                 chat_interface.get_memory_markdown(),
             )
@@ -590,8 +598,8 @@ def create_gradio_ui():
                 search_md,
                 obs_md,
                 mem_md,
-            ) in chat_interface.chat_stream_full(msg_str, history):
-                full_history = current_history + resp_messages
+            ) in chat_interface.chat_stream_full(msg_str, safe_history):
+                full_history = current_history + (resp_messages or [])
                 yield (
                     "",
                     full_history,

@@ -37,6 +37,7 @@ class RAGSystem:
                 model=config.LLM_MODEL,
                 temperature=config.LLM_TEMPERATURE,
                 seed=config.LLM_SEED,
+                think=False,
             )
         tools = ToolFactory(collection).create_tools()
         self.agent_graph = create_agent_graph(llm, tools)

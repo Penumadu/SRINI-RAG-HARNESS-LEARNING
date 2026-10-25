@@ -131,7 +131,8 @@ def get_llm(provider: str = None, model: str = None, temperature: float = None, 
                 model=mdl,
                 temperature=temp,
                 seed=sd,
-                base_url=OLLAMA_BASE_URL
+                base_url=OLLAMA_BASE_URL,
+                think=False,
             )
         except ImportError:
             raise ImportError(

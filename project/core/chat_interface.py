@@ -1,6 +1,6 @@
 import json
 import re
-from langchain_core.messages import HumanMessage, AIMessageChunk, ToolMessage
+from langchain_core.messages import HumanMessage, AIMessage, AIMessageChunk, ToolMessage
 from core.execution_logger import log_chat_end, log_chat_start, log_error
 
 SYSTEM_NODES = {"summarize_history", "rewrite_query"}
@@ -412,7 +412,7 @@ class ChatInterface:
                 if node:
                     self.session_metrics["active_node"] = node
 
-                if node in SYSTEM_NODES and isinstance(chunk, AIMessageChunk) and chunk.content:
+                if node in SYSTEM_NODES and isinstance(chunk, (AIMessageChunk, AIMessage)) and chunk.content:
                     self._handle_system_node(chunk, node, response_messages, system_node_buffer)
 
                 elif hasattr(chunk, "tool_calls") and chunk.tool_calls:
@@ -421,7 +421,7 @@ class ChatInterface:
                 elif isinstance(chunk, ToolMessage):
                     self._handle_tool_result(chunk, response_messages, active_tool_calls)
 
-                elif isinstance(chunk, AIMessageChunk) and chunk.content and node in FINAL_RESPONSE_NODES:
+                elif isinstance(chunk, (AIMessageChunk, AIMessage)) and chunk.content and node in FINAL_RESPONSE_NODES:
                     self._handle_llm_token(chunk, node, response_messages)
 
                 else:
@@ -437,13 +437,39 @@ class ChatInterface:
             final_state = self.rag_system.agent_graph.get_state(config)
             log_chat_end(getattr(final_state, "values", final_state))
             
-            # Post-execution summary extraction
+            # Post-execution state & message extraction
             if hasattr(final_state, "values") and isinstance(final_state.values, dict):
                 conv_sum = final_state.values.get("conversation_summary", "")
                 if conv_sum:
                     self.working_memory_summary = conv_sum
 
-            self.session_metrics["status"] = "Completed"
+                rewritten = final_state.values.get("rewrittenQuestions", [])
+                if rewritten:
+                    self.rewritten_questions = rewritten
+
+                # Handle clarification interrupt
+                if getattr(final_state, "next", None) and "request_clarification" in final_state.next:
+                    clarification = final_state.values.get("clarification", "") or "Could you please provide a bit more context for your question?"
+                    self.session_metrics["clarification_needed"] = True
+                    self.session_metrics["status"] = "Needs Clarification"
+                    plain_idx = next((i for i, m in enumerate(response_messages) if m.get("role") == "assistant" and "metadata" not in m), None)
+                    if plain_idx is not None:
+                        response_messages[plain_idx]["content"] = clarification
+                    else:
+                        response_messages.append(make_message(clarification))
+                else:
+                    # Ensure final synthesized answer is surfaced from state
+                    msgs = final_state.values.get("messages", [])
+                    if msgs:
+                        last_ai = next((m for m in reversed(msgs) if isinstance(m, (AIMessage, AIMessageChunk)) and m.content and not getattr(m, "tool_calls", None)), None)
+                        if last_ai and last_ai.content:
+                            plain_idx = next((i for i, m in enumerate(response_messages) if m.get("role") == "assistant" and "metadata" not in m), None)
+                            if plain_idx is not None:
+                                response_messages[plain_idx]["content"] = last_ai.content
+                            else:
+                                response_messages.append(make_message(last_ai.content))
+
+            self.session_metrics["status"] = "Completed" if not self.session_metrics.get("clarification_needed") else "Needs Clarification"
             self.session_metrics["active_node"] = "Idle"
             self._log_event("chat.end", "Execution Finished", "Synthesized response delivered")
 

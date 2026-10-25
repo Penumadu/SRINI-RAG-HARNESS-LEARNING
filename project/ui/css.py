@@ -872,18 +872,19 @@ button.upload-container > span {
 }
 
 .chatbot,
+#rag-chatbot,
 [data-testid="chatbot"] {
     flex: 1 1 0% !important;
-    min-height: 160px !important;
-    height: auto !important;
+    min-height: 250px !important;
+    height: 100% !important;
     background: transparent !important;
     border: none !important;
-    overflow-y: auto !important;
-    padding: 8px 0 !important;
 }
 
-.chatbot * {
-    background-color: transparent;
+.chatbot .wrapper,
+#rag-chatbot .wrapper {
+    background: transparent !important;
+    border: none !important;
 }
 
 /* Empty Hero Card inside Chat */
@@ -893,8 +894,8 @@ button.upload-container > span {
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 44px 16px;
-    max-width: 540px;
+    padding: 36px 16px;
+    max-width: 520px;
     margin: auto;
 }
 
@@ -928,29 +929,41 @@ button.upload-container > span {
     margin: 0;
 }
 
-/* Chat Message Bubbles */
-.message.user,
-[data-testid="user"] .message,
-div[class*="user"] > .message {
+/* User Message Bubble - High Contrast Vibrant Indigo */
+.chatbot [data-testid="user"],
+.chatbot .message.user,
+.chatbot .user .message-content,
+.chatbot div[class*="user"] .message-content,
+.chatbot div[class*="user"] > .message,
+.chatbot div[class*="user"] > div,
+.message.user {
     background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%) !important;
     color: #FFFFFF !important;
     border-radius: 14px 14px 2px 14px !important;
     padding: 10px 16px !important;
     font-size: 13.5px !important;
     line-height: 1.55 !important;
-    max-width: 78% !important;
+    max-width: 82% !important;
     margin-left: auto !important;
-    box-shadow: 0 3px 10px rgba(79, 70, 229, 0.25) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 3px 10px rgba(79, 70, 229, 0.20) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
-.message.user * {
+.chatbot [data-testid="user"] *,
+.chatbot .message.user *,
+.chatbot .user .message-content *,
+.chatbot div[class*="user"] .message-content * {
     color: #FFFFFF !important;
 }
 
-.message.bot,
-[data-testid="bot"] .message,
-div[class*="bot"] > .message {
+/* Bot Message Bubble - Crisp Card with subtle border */
+.chatbot [data-testid="bot"],
+.chatbot .message.bot,
+.chatbot .bot .message-content,
+.chatbot div[class*="bot"] .message-content,
+.chatbot div[class*="bot"] > .message,
+.chatbot div[class*="bot"] > div,
+.message.bot {
     background: #FFFFFF !important;
     color: var(--ink-primary) !important;
     border: 1px solid var(--border-subtle) !important;
@@ -958,17 +971,22 @@ div[class*="bot"] > .message {
     padding: 14px 18px !important;
     font-size: 13.5px !important;
     line-height: 1.6 !important;
-    max-width: 84% !important;
+    max-width: 86% !important;
     margin-right: auto !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 
-.message.bot * {
+.chatbot [data-testid="bot"] *,
+.chatbot .message.bot *,
+.chatbot .bot .message-content *,
+.chatbot div[class*="bot"] .message-content * {
     color: var(--ink-primary) !important;
 }
 
 .message.bot pre,
-.message.bot code {
+.message.bot code,
+.chatbot pre,
+.chatbot code {
     font-family: var(--font-mono) !important;
     font-size: 12px !important;
     background: var(--surface-subtle) !important;
@@ -978,25 +996,30 @@ div[class*="bot"] > .message {
     color: var(--ink-primary) !important;
 }
 
-.message.bot pre code {
+.message.bot pre code,
+.chatbot pre code {
     padding: 10px 14px !important;
     display: block !important;
     background: #0F172A !important;
     color: #F8FAFC !important;
 }
 
-.chatbot details {
-    background: var(--surface-subtle) !important;
-    border: 1px solid var(--border-subtle) !important;
-    border-radius: 7px !important;
-    margin: 6px 0 !important;
-    padding: 6px 10px !important;
+/* Accordion / Thought Groups in Chat */
+.chatbot .thought-group,
+.chatbot details,
+.chatbot [class*="thought"] {
+    background: #F1F5F9 !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    margin: 8px 0 !important;
+    padding: 8px 12px !important;
 }
 
-.chatbot summary {
-    font-size: 0.76rem !important;
+.chatbot .thought-group summary,
+.chatbot details summary {
+    font-size: 0.78rem !important;
     font-weight: 600 !important;
-    color: var(--brand-primary) !important;
+    color: #4F46E5 !important;
     cursor: pointer !important;
 }
 
