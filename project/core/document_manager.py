@@ -10,25 +10,49 @@ class DocumentManager:
         self.markdown_dir = Path(config.MARKDOWN_DIR)
         self.markdown_dir.mkdir(parents=True, exist_ok=True)
         
+    @staticmethod
+    def _extract_file_info(p):
+        path_str = None
+        orig_name = None
+        if isinstance(p, dict):
+            path_str = p.get("path") or p.get("name")
+            orig_name = p.get("orig_name")
+        elif hasattr(p, "path"):
+            path_str = str(p.path)
+            orig_name = getattr(p, "orig_name", None)
+        elif hasattr(p, "name") and not isinstance(p, (str, Path)):
+            path_str = str(p.name)
+            orig_name = getattr(p, "orig_name", None)
+        elif p:
+            path_str = str(p)
+            
+        if path_str and Path(path_str).suffix.lower() in [".pdf", ".md"]:
+            return path_str, orig_name or Path(path_str).name
+        return None, None
+
     def add_documents(self, document_paths, progress_callback=None):
         if not document_paths:
             return 0, 0
             
-        document_paths = [document_paths] if isinstance(document_paths, str) else document_paths
-        document_paths = [p for p in document_paths if p and Path(p).suffix.lower() in [".pdf", ".md"]]
+        raw_list = [document_paths] if isinstance(document_paths, (str, dict, Path)) or hasattr(document_paths, "path") else document_paths
+        valid_docs = []
+        for p in raw_list:
+            fpath, fname = self._extract_file_info(p)
+            if fpath:
+                valid_docs.append((fpath, fname))
         
-        if not document_paths:
+        if not valid_docs:
             return 0, 0
             
         added = 0
         skipped = 0
             
-        for i, doc_path in enumerate(document_paths):
+        for i, (doc_path, orig_name) in enumerate(valid_docs):
             if progress_callback:
-                progress_callback((i + 1) / len(document_paths), f"Processing {Path(doc_path).name}")
+                progress_callback((i + 1) / len(valid_docs), f"Processing {orig_name}")
                 
             source_path = Path(doc_path)
-            doc_name = source_path.stem
+            doc_name = Path(orig_name).stem if orig_name else source_path.stem
             md_path = self.markdown_dir / f"{doc_name}.md"
             
             if md_path.exists():
@@ -43,7 +67,7 @@ class DocumentManager:
                     pdfs_to_markdowns(str(source_path), overwrite=False)
                 parent_chunks, child_chunks = self.rag_system.chunker.create_chunks_single(
                     md_path,
-                    source_name=source_path.name,
+                    source_name=orig_name or source_path.name,
                 )
                 
                 if not child_chunks:
